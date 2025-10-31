@@ -73,6 +73,15 @@ async function dataURLtoBlob(dataURL) {
 const uploadBtn = document.getElementById('uploadBtn');
 let activeStream = null; // Track active camera stream
 
+if (uploadBtn && fileInput) {
+  console.log('📤 Upload button listener attached');
+  uploadBtn.addEventListener('click', () => {
+    console.log('🖱️ Upload button clicked!');
+    // Stop camera when switching to upload
+    stopCamera();
+    fileInput.click();
+  });
+}
 
 // Helper function to stop camera
 function stopCamera() {

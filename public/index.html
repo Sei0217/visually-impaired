@@ -88,8 +88,17 @@
 
       <div id="resultsSection" class="results-area" style="display:none;">
         <h3>Analysis Results</h3>
-        <div class="result-item"><strong>Object Type:</strong> <span id="diseaseType"></span></div>
+        <div class="result-item"><strong>Disease Type:</strong> <span id="diseaseType"></span></div>
         <div class="result-item"><strong>Confidence Score:</strong> <span id="confidenceScore"></span></div>
+        <div class="result-description">
+          <h4>Description:</h4><p id="diseaseDescription"></p>
+        </div>
+        <div class="prescription-mitigation">
+          <h4>Prescription:</h4><ul id="prescription"><li></li></ul>
+          <h4>Mitigation Strategies:</h4><ul id="mitigation"><li></li></ul>
+        </div>
+        <ul id="resultsList"></ul>
+        <button class="btn share-btn"><i class="fas fa-share-alt"></i> Share Results</button>
       </div>
     </section>
   </main>
@@ -146,7 +155,6 @@
 
     /* --------- HARD GUARDS: never auto-analyze --------- */
     let isAnalyzing   = false;  // single-flight
-    let reqSeq = 0; 
     let ALLOW_PROCESS = false;  // Analyze button only
 
     // Prevent any implicit 'submit'
@@ -154,8 +162,6 @@
       f.addEventListener('submit', e => e.preventDefault(), { capture:true });
     });
     if (analyzeBtn && analyzeBtn.type !== 'button') analyzeBtn.type = 'button';
-
-    
 
     /* --------- Preview-only handlers --------- */
     imageInput.addEventListener('change', e => setPreviewFile(e.target.files?.[0]));
@@ -230,40 +236,13 @@
       }, 'image/jpeg');
       stopCamera();
     });
-    /* Downscale Function */
-    async function downscaleFile(file, maxDim = 800, quality = 0.72) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          let w = img.naturalWidth, h = img.naturalHeight;
-          if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
-          else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          canvas.toBlob(b => {
-            if (!b) return reject(new Error('compress failed'));
-            resolve(new File([b], 'upload.jpg', { type: 'image/jpeg' }));
-          }, 'image/jpeg', quality);
-        };
-        img.onerror = reject;
-        img.src = URL.createObjectURL(file);
-      });
-    }
 
     function stopCamera() { stream?.getTracks().forEach(t => t.stop()); }
 
     /* --------- Results list (fix NaN%) --------- */
     function updateDetectionsList(analysis) {
       const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
-      let ul = document.getElementById('resultsList');
-      if (!ul) {
-        ul = document.createElement('ul');
-        ul.id = 'resultsList';
-        (resultsBox || document.body).appendChild(ul);
-      }
+      const ul   = document.getElementById('resultsList');
       ul.innerHTML = dets.length
         ? dets.map(d => {
             const raw  = d.confidence ?? d.conf ?? d.score ?? d.prob ?? 0;
@@ -278,135 +257,84 @@
     /* --------- Analyze button: the ONLY path that can process() --------- */
     if (!window.__wiredAnalyze) {
       window.__wiredAnalyze = true;
-
-      analyzeBtn?.addEventListener('click', async (e) => {
-        e?.preventDefault?.();
-
+      analyzeBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
         if (isAnalyzing) return;
         if (!currentImageFile) { alert('Please select or capture an image first.'); return; }
 
         isAnalyzing   = true;
         ALLOW_PROCESS = true;
-        const myId    = ++reqSeq; // capture my request ID
 
         // lock UI + spinner
         const sp = document.getElementById('loadingSpinner');
         if (sp) sp.style.display = 'flex';
-        [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b => b && (b.disabled = true));
-        resultsBox && (resultsBox.style.display = 'none');
+        [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b=>b && (b.disabled = true));
+        resultsBox.style.display = 'none';
 
         try {
-          // Downscale then send
           const fd = new FormData();
-          let small;
-          try {
-            small = await downscaleFile(currentImageFile, 800, 0.72);
-          } catch {
-            small = currentImageFile; // fallback
-          }
-          fd.append('image', small, 'upload.jpg');
-
-          // ✅ CALL process() and capture result
-          const ok = await process(fd, myId); // 60s timeout
-          if (!ok) console.warn('Analyze failed / timed out / stale.');
-
-        } catch (err) {
-          console.error(err);
-          alert('❌ Failed to analyze image.');
+          fd.append('image', currentImageFile, currentImageFile.name || 'upload.jpg');
+          const ok = await process(fd);
+          if (!ok) console.warn('Analyze failed.');
         } finally {
           if (sp) sp.style.display = 'none';
-          [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b => b && (b.disabled = false));
+          [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b=>b && (b.disabled = false));
           isAnalyzing = false;
         }
       });
     }
 
-
     /* --------- Core request (gated; hard timeout only) --------- */
-    async function process(formData, myId, timeoutMs = 180_000) {
-        if (!ALLOW_PROCESS) { console.warn('process() ignored: not from Analyze'); return false; }
+    async function process(formData) {
+      if (!ALLOW_PROCESS) { console.warn('process() ignored: not from Analyze'); return false; }
+      try {
+        const uploadURL = '/api/detect'; // works both localhost & vercel
+        const ac = new AbortController();
+        const t  = setTimeout(() => ac.abort('timeout'), 180000); // 3 min
+        const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
+            .finally(()=>clearTimeout(t));
 
-        try {
-          const uploadURL = '/api/detect?imgsz=256&conf=0.25'; // smaller, faster
-          const ac = new AbortController();
-          const killer = setTimeout(() => ac.abort('timeout'), timeoutMs);
-
-          const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
-            .finally(() => clearTimeout(killer));
-
-          // drop stale responses
-          if (myId !== reqSeq) return false;
-
-          if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            alert(`❌ Failed to analyze image.\nHTTP ${res.status}${text ? ' ' + text : ''}`);
-            return false;
-          }
-
-          const data = await res.json();
-          if (myId !== reqSeq) return false; // stale success
-
-          const annotated = data.image_base64 || data.annotated_image_url || '';
-          if (annotated) imagePrev.src = annotated;
-
-          window.currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
-
-          // top fields (if present)
-          const objType = currentAnalysis.object_type ?? (currentAnalysis?.detections?.[0]?.label ?? '');
-          const topPct  = Number.isFinite(Number(currentAnalysis.confidence_score))
-            ? Number(currentAnalysis.confidence_score)
-            : 0;
-          const diseaseTypeEl     = document.getElementById('diseaseType');
-          const confidenceScoreEl = document.getElementById('confidenceScore');
-          if (diseaseTypeEl)     diseaseTypeEl.textContent     = objType;
-          if (confidenceScoreEl) confidenceScoreEl.textContent = `${topPct}%`;
-
-          imagePrev.style.display = 'block';
-          resultsBox && (resultsBox.style.display = 'block');
-
-          // populate list with per-detection % (no NaN)
-          (function updateDetectionsList(analysis){
-            const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
-            let ul = document.getElementById('resultsList');
-            if (!ul) {
-              ul = document.createElement('ul');
-              ul.id = 'resultsList';
-              (resultsBox || document.body).appendChild(ul);
-            }
-            ul.innerHTML = dets.length
-              ? dets.map(d => {
-                  const raw  = d.confidence ?? d.conf ?? d.score ?? d.prob ?? 0;
-                  const conf = Number(raw);
-                  const pct  = Number.isFinite(conf) ? Math.round(conf * 100) : 0;
-                  const label= String(d.label ?? d.class ?? d.name ?? 'object');
-                  return `<li>${label} — ${pct}%</li>`;
-                }).join('')
-              : '<li>No objects detected.</li>';
-          })(window.currentAnalysis);
-
-          if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
-            window.appendToHistory(currentAnalysis);
-          }
-
-          return true;
-
-        } catch (err) {
-          if (myId !== reqSeq) return false; // ignore superseded
-          if (err?.name === 'AbortError') {
-            alert('⏱️ Analyze timed out after 20 seconds. Try again or use a smaller image.');
-            return false;
-          }
-          console.error(err);
-          alert('❌ Failed to analyze image. (Network error)');
-          imagePrev.style.display  = 'block';
-          resultsBox && (resultsBox.style.display = 'block');
+        if (!res.ok) {
+          const text = await res.text().catch(()=> '');
+          alert(`❌ Failed to analyze image.\nHTTP ${res.status} ${text}`);
           return false;
-
-        } finally {
-          if (myId === reqSeq) ALLOW_PROCESS = false; // close the gate
         }
-    }
 
+        const data = await res.json();
+        const annotated = data.image_base64 || data.annotated_image_url || '';
+        if (annotated) imagePrev.src = annotated;
+
+        currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
+
+        // top fields (compatible with unified main.py)
+        const objType = currentAnalysis.object_type ?? '';
+        const topPct  = Number.isFinite(Number(currentAnalysis.confidence_score))
+                        ? Number(currentAnalysis.confidence_score)
+                        : 0;
+        diseaseTypeEl.textContent     = objType || (currentAnalysis?.detections?.[0]?.label ?? '');
+        confidenceScoreEl.textContent = `${topPct}%`;
+
+        imagePrev.style.display = 'block';
+        resultsBox.style.display = 'block';
+        updateDetectionsList(currentAnalysis);
+
+        // optional: history hook if present
+        if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
+          window.appendToHistory(currentAnalysis);
+        }
+        return true;
+
+      } catch (err) {
+        if (err?.name === 'AbortError') { alert('❌ Analyze timed out. Please try again.'); return false; }
+        console.error(err);
+        alert('❌ Failed to analyze image. (Network error)');
+        imagePrev.style.display  = 'block';
+        resultsBox.style.display = 'block';
+        return false;
+      } finally {
+        ALLOW_PROCESS = false; // gate closes after each analyze
+      }
+    }
 
     /* --------- Fullscreen viewer --------- */
     const modal = document.getElementById('imageModal');

@@ -146,6 +146,7 @@
 
     /* --------- HARD GUARDS: never auto-analyze --------- */
     let isAnalyzing   = false;  // single-flight
+    let reqSeq = 0; 
     let ALLOW_PROCESS = false;  // Analyze button only
 
     // Prevent any implicit 'submit'
@@ -233,7 +234,12 @@
     /* --------- Results list (fix NaN%) --------- */
     function updateDetectionsList(analysis) {
       const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
-      const ul   = document.getElementById('resultsList');
+      let ul = document.getElementById('resultsList');
+      if (!ul) {
+        ul = document.createElement('ul');
+        ul.id = 'resultsList';
+        (resultsBox || document.body).appendChild(ul);
+      }
       ul.innerHTML = dets.length
         ? dets.map(d => {
             const raw  = d.confidence ?? d.conf ?? d.score ?? d.prob ?? 0;
@@ -247,84 +253,108 @@
 
     /* --------- Analyze button: the ONLY path that can process() --------- */
     if (!window.__wiredAnalyze) {
-      window.__wiredAnalyze = true;
-      analyzeBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (isAnalyzing) return;
-        if (!currentImageFile) { alert('Please select or capture an image first.'); return; }
+        window.__wiredAnalyze = true;
 
-        isAnalyzing   = true;
-        ALLOW_PROCESS = true;
+        analyzeBtn?.addEventListener('click', async (e) => {
+          e?.preventDefault?.();
 
-        // lock UI + spinner
-        const sp = document.getElementById('loadingSpinner');
-        if (sp) sp.style.display = 'flex';
-        [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b=>b && (b.disabled = true));
-        resultsBox.style.display = 'none';
+          if (isAnalyzing) return;
+          if (!currentImageFile) { alert('Please select or capture an image first.'); return; }
 
-        try {
-          const fd = new FormData();
-          fd.append('image', currentImageFile, currentImageFile.name || 'upload.jpg');
-          const ok = await process(fd);
-          if (!ok) console.warn('Analyze failed.');
-        } finally {
-          if (sp) sp.style.display = 'none';
-          [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b=>b && (b.disabled = false));
-          isAnalyzing = false;
-        }
-      });
+          isAnalyzing   = true;
+          ALLOW_PROCESS = true;
+          const myId    = ++reqSeq; // capture my request ID
+
+          // lock UI + spinner
+          const sp = document.getElementById('loadingSpinner');
+          if (sp) sp.style.display = 'flex';
+          [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b => b && (b.disabled = true));
+          resultsBox && (resultsBox.style.display = 'none');
+
+          try {
+            const fd = new FormData();
+            fd.append('image', currentImageFile, currentImageFile.name || 'upload.jpg');
+            const ok = await process(fd, myId);
+            if (!ok) console.warn('Analyze failed or ignored (stale).');
+
+          } finally {
+            if (sp) sp.style.display = 'none';
+            [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b => b && (b.disabled = false));
+            isAnalyzing = false;
+          }
+        });
     }
 
     /* --------- Core request (gated; hard timeout only) --------- */
-    async function process(formData) {
-      if (!ALLOW_PROCESS) { console.warn('process() ignored: not from Analyze'); return false; }
-      try {
-        const uploadURL = '/api/detect'; // works both localhost & vercel
-        const ac = new AbortController();
-        const t  = setTimeout(() => ac.abort('timeout'), 180000); // 3 min
-        const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
-            .finally(()=>clearTimeout(t));
+    async function process(formData, myId) {
+    if (!ALLOW_PROCESS) { console.warn('process() ignored: not from Analyze'); return false; }
 
-        if (!res.ok) {
-          const text = await res.text().catch(()=> '');
-          alert(`❌ Failed to analyze image.\nHTTP ${res.status} ${text}`);
-          return false;
-        }
+    try {
+      const uploadURL = '/api/detect'; // 307 to Render (followed by browser)
+      const ac = new AbortController();
+      const t  = setTimeout(() => ac.abort('timeout'), 180000); // 3 min hard timeout
 
-        const data = await res.json();
-        const annotated = data.image_base64 || data.annotated_image_url || '';
-        if (annotated) imagePrev.src = annotated;
+      const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
+        .finally(() => clearTimeout(t));
 
-        currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
+      // If another Analyze started while this was in-flight, suppress everything.
+      if (myId !== reqSeq) return false;
 
-        // top fields (compatible with unified main.py)
-        const objType = currentAnalysis.object_type ?? '';
-        const topPct  = Number.isFinite(Number(currentAnalysis.confidence_score))
-                        ? Number(currentAnalysis.confidence_score)
-                        : 0;
-        diseaseTypeEl.textContent     = objType || (currentAnalysis?.detections?.[0]?.label ?? '');
-        confidenceScoreEl.textContent = `${topPct}%`;
-
-        imagePrev.style.display = 'block';
-        resultsBox.style.display = 'block';
-        updateDetectionsList(currentAnalysis);
-
-        // optional: history hook if present
-        if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
-          window.appendToHistory(currentAnalysis);
-        }
-        return true;
-
-      } catch (err) {
-        if (err?.name === 'AbortError') { alert('❌ Analyze timed out. Please try again.'); return false; }
-        console.error(err);
-        alert('❌ Failed to analyze image. (Network error)');
-        imagePrev.style.display  = 'block';
-        resultsBox.style.display = 'block';
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        // Show alert only if this is still the latest request
+        alert(`❌ Failed to analyze image.\nHTTP ${res.status} ${text}`);
         return false;
-      } finally {
-        ALLOW_PROCESS = false; // gate closes after each analyze
       }
+
+      const data = await res.json();
+      if (myId !== reqSeq) return false; // stale success → ignore
+
+      const annotated = data.image_base64 || data.annotated_image_url || '';
+      if (annotated) imagePrev.src = annotated;
+
+      window.currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
+
+      // top fields (if present from server)
+      const objType = currentAnalysis.object_type ?? (currentAnalysis?.detections?.[0]?.label ?? '');
+      const topPct  = Number.isFinite(Number(currentAnalysis.confidence_score))
+        ? Number(currentAnalysis.confidence_score)
+        : 0;
+      const diseaseTypeEl     = document.getElementById('diseaseType');
+      const confidenceScoreEl = document.getElementById('confidenceScore');
+      if (diseaseTypeEl)     diseaseTypeEl.textContent     = objType;
+      if (confidenceScoreEl) confidenceScoreEl.textContent = `${topPct}%`;
+
+      imagePrev.style.display = 'block';
+      resultsBox && (resultsBox.style.display = 'block');
+
+      updateDetectionsList(window.currentAnalysis);
+
+      if (window.appendToHistory && (window.currentAnalysis?.detections?.length || 0) > 0) {
+        window.appendToHistory(window.currentAnalysis);
+      }
+
+      return true;
+
+    } catch (err) {
+      // If a newer request superseded this one, don't bother the user
+      if (myId !== reqSeq) return false;
+
+      if (err?.name === 'AbortError') {
+        alert('❌ Analyze timed out. Please try again.');
+        return false;
+      }
+      console.error(err);
+      alert('❌ Failed to analyze image. (Network error)');
+      imagePrev.style.display  = 'block';
+      resultsBox && (resultsBox.style.display = 'block');
+      return false;
+
+    } finally {
+      // close the gate only if this is still the latest request
+      if (myId === reqSeq) ALLOW_PROCESS = false;
+    }
+
     }
 
     /* --------- Fullscreen viewer --------- */

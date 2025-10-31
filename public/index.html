@@ -231,18 +231,6 @@
     function stopCamera() { stream?.getTracks().forEach(t => t.stop()); }
 
     /* --------- Results list (fix NaN%) --------- */
-    function updateDetectionsList(analysis) {
-      const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
-      ul.innerHTML = dets.length
-        ? dets.map(d => {
-            const raw  = d.confidence ?? d.conf ?? d.score ?? d.prob ?? 0;
-            const conf = Number(raw);
-            const pct  = Number.isFinite(conf) ? Math.round(conf * 100) : 0;
-            const label= String(d.label ?? d.class ?? d.name ?? 'object');
-            return `<li>${label} — ${pct}%</li>`;
-          }).join('')
-        : '<li>No objects detected.</li>';
-    }
 
     /* --------- Analyze button: the ONLY path that can process() --------- */
     if (!window.__wiredAnalyze) {

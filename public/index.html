@@ -316,7 +316,7 @@
     try {
       const uploadURL = '/api/detect?imgsz=256&conf=0.25'; // 307 to Render (followed by browser)
       const ac = new AbortController();
-      const t  = setTimeout(() => ac.abort('timeout'), 180000); // 3 min hard timeout
+      const t  = setTimeout(() => ac.abort('timeout'), 20000); // 3 min hard timeout
 
       const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
         .finally(() => clearTimeout(t));

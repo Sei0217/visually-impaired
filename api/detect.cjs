@@ -1,11 +1,9 @@
-// api/detect.js
-import { IncomingForm } from "formidable";
-import fs from "fs";
-import FormData from "form-data";
+// api/detect.cjs (CommonJS)
+const { IncomingForm } = require("formidable");
+const fs = require("fs");
+const FormData = require("form-data");
 
-export const config = { api: { bodyParser: false } };
-
-export default function handler(req, res) {
+module.exports = (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Only POST allowed" });
 
   const form = new IncomingForm({ keepExtensions: true, uploadDir: "/tmp", maxFileSize: 15 * 1024 * 1024 });
@@ -18,11 +16,14 @@ export default function handler(req, res) {
 
       const fd = new FormData();
       fd.append("image", fs.createReadStream(f.filepath), f.originalFilename || "upload.jpg");
+
       const qs = new URLSearchParams({ return_image: "true" });
       if (fields.conf) qs.set("conf", fields.conf);
       if (fields.imgsz) qs.set("imgsz", fields.imgsz);
 
       const url = `${process.env.ML_SERVER_URL}/api/detect?${qs.toString()}`;
+
+      // Node 18 has global fetch, but require('node-fetch') is okay too if needed
       const r = await fetch(url, { method: "POST", body: fd, headers: fd.getHeaders() });
       const text = await r.text();
       let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
@@ -35,4 +36,4 @@ export default function handler(req, res) {
       try { if (files?.file?.filepath) fs.unlinkSync(files.file.filepath); } catch {}
     }
   });
-}
+};

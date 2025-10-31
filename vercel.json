@@ -7,6 +7,7 @@
     { "source": "/summary", "destination": "/api/summary" },
     { "source": "/information", "destination": "/information.html" },
     { "source": "/analytics", "destination": "/analytics.html" },
+    { "source": "/api/detect", "destination": "https://visually-impaired.onrender.com/api/detect" },
     { "source": "/home", "destination": "/index.html" }
   ],
   "redirects": [{ "source": "/", "destination": "/home", "permanent": false }]

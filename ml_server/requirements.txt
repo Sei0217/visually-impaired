@@ -1,5 +1,6 @@
 fastapi
-uvicorn
-ultralytics
-opencv-python-headless
+uvicorn[standard]
+ultralytics==8.3.34
+pillow
 numpy
+opencv-python-headless

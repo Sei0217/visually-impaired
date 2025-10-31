@@ -13,7 +13,8 @@
   <header>
     <div class="container">
       <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-      <a style="color: #fff;text-decoration: none;" href=/index.html"><h1>Object Recognition and Navigation </h1></a>
+      <a style="color: #fff;text-decoration: none;" href="/index.html">
+        <h1>Object Recognition and Navigation </h1></a>
       <nav>
         <ul id="navMenu">
           <li><a href="/index.html">Home</a></li>
@@ -57,7 +58,7 @@
 <h2>Detect Object</h2>
       <div class="upload-area">
         <p>Select or capture an image oof an object for analysis:</p>
-        <input type="file" id="imageInput" accept="image/jpeg,image/jpg,image/png,image/webp">
+        <input type="file" id="imageInput" name="image" accept="image/*">
         <button id="startCameraBtn" class="btn primary-btn"><i class="fas fa-camera"></i> Use Camera</button>
         <button id="uploadBtn" class="btn primary-btn"><i class="fas fa-upload"></i> Upload Image</button>
 
@@ -293,8 +294,9 @@
       stream?.getTracks().forEach(t => t.stop());
     }
 
+    // === Analyze button ===
     analyzeBtn.addEventListener('click', async () => {
-      // UI lock + spinner gaya ng dati
+      // Lock UI + show spinner
       startBtn.disabled = true;
       uploadBtn.disabled = true;
       captureBtn.disabled = true;
@@ -303,27 +305,22 @@
       document.getElementById('loadingSpinner').style.display = 'flex';
 
       try {
-        let formData = new FormData();
-        if (currentImageFile) {
-          formData.append('image', currentImageFile);
-
-          // CHANGE: gawing optional ang call para 'di mag-throw kapag undefined
-          if (
-            currentAnalysis?.detections?.length > 0 &&
-            currentAnalysis?.annotated_image_url &&
-            currentAnalysis.annotated_image_url !== imagePrev.src
-          ) {
-            window.appendToHistory?.(currentAnalysis);
-          }
-
-
-          await process(formData);
+        // Guard: must have a file
+        if (!currentImageFile) {
+          alert('Please select or capture an image first.');
+          return;
         }
+
+        // Build form-data (include filename so server sees a real file)
+        const formData = new FormData();
+        formData.append('image', currentImageFile, currentImageFile.name || 'upload.jpg');
+
+        await process(formData);
       } catch (err) {
         console.error(err);
         alert('❌ Failed to analyze image.');
       } finally {
-        // ALWAYS unlock UI kahit nag-error bago tumawag sa process()
+        // Always unlock UI
         document.getElementById('loadingSpinner').style.display = 'none';
         startBtn.disabled = false;
         uploadBtn.disabled = false;
@@ -333,45 +330,50 @@
     });
 
 
+    // === Core request/response handler ===
     async function process(formData) {
       try {
         const uploadURL = `/api/detect`;
 
-        // ADD: abort previous in-flight request para 'di magkapatong ang fetch
+        // Abort any in-flight request
         try { inFlightController?.abort(); } catch {}
         inFlightController = new AbortController();
         const signal = inFlightController.signal;
 
         const res = await fetch(uploadURL, { method: 'POST', body: formData, signal });
 
-        // ADD: huwag mag-json kapag hindi OK ang status (para hindi ma-stuck)
+        // Don't parse as JSON if not OK
         if (!res.ok) {
           const text = await res.text().catch(() => '');
           throw new Error(`HTTP ${res.status} ${text}`);
         }
 
-        currentAnalysis = await res.json();
+        const data = await res.json();
 
-        if (currentAnalysis.annotated_image_url) {
-          imagePrev.src = currentAnalysis.annotated_image_url;
-        } else {
-          currentAnalysis.annotated_image_url = imagePrev.src;
-        }
+        // Prefer annotated base64 from server, fallback to any existing url
+        const annotated = data.image_base64 || data.annotated_image_url || '';
+        if (annotated) imagePrev.src = annotated;
+
+        // Persist latest analysis; normalize key so UI/history expecting annotated_image_url still works
+        currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
+
+        // Reveal UI
         imagePrev.style.display = 'block';
         resultsBox.style.display = 'block';
 
-        // (UI unlocking lipat na tayo sa finally ng click handler)
-      } catch (err) {
-        if (err?.name === 'AbortError') {
-          // tahimik lang kapag may bagong analyze na nag-cancel dito
-          return;
+        // Append to history only after success and when there are detections
+        if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
+          window.appendToHistory(currentAnalysis);
         }
+      } catch (err) {
+        if (err?.name === 'AbortError') return; // silent if superseded by a new request
         console.error(err);
         alert('❌ Failed to analyze image.');
         imagePrev.style.display = 'block';
         resultsBox.style.display = 'block';
       }
     }
+
   </script>
 
   <script type="module">

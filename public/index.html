@@ -307,7 +307,7 @@
           fd.append('image', small, 'upload.jpg');
 
           // ✅ CALL process() and capture result
-          const ok = await process(fd, myId, 20_000); // 20s timeout
+          const ok = await process(fd, myId, 45_000); // 60s timeout
           if (!ok) console.warn('Analyze failed / timed out / stale.');
 
         } catch (err) {
@@ -323,7 +323,7 @@
 
 
     /* --------- Core request (gated; hard timeout only) --------- */
-    async function process(formData, myId, timeoutMs = 10_000) {
+    async function process(formData, myId, timeoutMs = 45_000) {
         if (!ALLOW_PROCESS) { console.warn('process() ignored: not from Analyze'); return false; }
 
         try {

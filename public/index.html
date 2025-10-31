@@ -332,47 +332,77 @@
 
     // === Core request/response handler ===
     async function process(formData) {
-      try {
-        const uploadURL = `/api/detect`;
+  try {
+    const uploadURL = '/api/detect';   // 307 redirect sa Render
 
-        // Abort any in-flight request
-        try { inFlightController?.abort(); } catch {}
-        inFlightController = new AbortController();
-        const signal = inFlightController.signal;
+    // cancel previous + add hard timeout
+    try { inFlightController?.abort(); } catch {}
+    const ac = new AbortController();
+    inFlightController = ac;
+    const t = setTimeout(() => ac.abort('timeout'), 180_000); // up to 3 min
+    const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
+      .finally(() => clearTimeout(t));
 
-        const res = await fetch(uploadURL, { method: 'POST', body: formData, signal });
-
-        // Don't parse as JSON if not OK
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
-          throw new Error(`HTTP ${res.status} ${text}`);
-        }
-
-        const data = await res.json();
-
-        // Prefer annotated base64 from server, fallback to any existing url
-        const annotated = data.image_base64 || data.annotated_image_url || '';
-        if (annotated) imagePrev.src = annotated;
-
-        // Persist latest analysis; normalize key so UI/history expecting annotated_image_url still works
-        currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
-
-        // Reveal UI
-        imagePrev.style.display = 'block';
-        resultsBox.style.display = 'block';
-
-        // Append to history only after success and when there are detections
-        if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
-          window.appendToHistory(currentAnalysis);
-        }
-      } catch (err) {
-        if (err?.name === 'AbortError') return; // silent if superseded by a new request
-        console.error(err);
-        alert('❌ Failed to analyze image.');
-        imagePrev.style.display = 'block';
-        resultsBox.style.display = 'block';
-      }
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      alert(`❌ Failed to analyze image.\nHTTP ${res.status} ${text}`);
+      return false;
     }
+
+    const data = await res.json();
+
+    // show annotated image
+    const annotated = data.image_base64 || data.annotated_image_url || '';
+    if (annotated) imagePrev.src = annotated;
+
+    // keep for other parts of the UI
+    currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
+
+    // --- RENDER DETECTIONS (fixes NaN%) ---
+    const dets = Array.isArray(currentAnalysis?.detections) ? currentAnalysis.detections : [];
+    // ensure there is a <ul id="resultsList"> inside resultsBox (or create one)
+    let ul = document.querySelector('#resultsList');
+    if (!ul) {
+      ul = document.createElement('ul');
+      ul.id = 'resultsList';
+      (resultsBox || document.body).appendChild(ul);
+    }
+    ul.innerHTML = dets.length
+      ? dets.map(d => {
+          // robust numeric coercion + fallback
+          const raw = d.confidence ?? d.score ?? d.prob ?? d.conf ?? d.confidence_score ?? 0;
+          const conf = Number(raw);
+          const pct  = Number.isFinite(conf) ? Math.round(conf * 100) : 0;
+          const label = String(d.label ?? d.class ?? d.name ?? 'object');
+          return `<li>${label} — ${pct}%</li>`;
+        }).join('')
+      : '<li>No objects detected.</li>';
+    // --- /RENDER DETECTIONS ---
+
+    // reveal UI
+    imagePrev.style.display = 'block';
+    resultsBox.style.display = 'block';
+
+    // optional: push to history only on success with detections
+    if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
+      window.appendToHistory(currentAnalysis);
+    }
+
+    return true;
+
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      console.warn('Request aborted:', err.message || err);
+      return false;
+    }
+    console.error(err);
+    alert('❌ Failed to analyze image. (Network/timeout)');
+    imagePrev.style.display = 'block';
+    resultsBox.style.display = 'block';
+    return false;
+  }
+}
+
 
   </script>
 

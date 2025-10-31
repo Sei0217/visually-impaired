@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/api/health", "destination": "https://visually-impaired.onrender.com/health" },
+    { "source": "/api/detect", "destination": "https://visually-impaired.onrender.com/api/detect" },
     { "source": "/api/upload", "destination": "/api/upload" },
     { "source": "/api/history", "destination": "/api/history" },
     { "source": "/api/summary", "destination": "/api/summary" },

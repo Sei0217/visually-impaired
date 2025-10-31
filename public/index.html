@@ -230,6 +230,47 @@
 
     function stopCamera() { stream?.getTracks().forEach(t => t.stop()); }
 
+    /* ===== Wake the ML server on page load ===== */
+    let mlReady = false;
+
+    function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+    async function wakeML({maxWait=60_000, perTry=7000} = {}) {
+      const start = Date.now();
+      const backoff = [0, 1000, 2000, 3000, 5000, 8000, 8000, 8000]; // progressive retry
+
+      for (let i = 0; Date.now() - start < maxWait; i++) {
+        try {
+          const ac = new AbortController();
+          const killer = setTimeout(() => ac.abort(), perTry);
+          const r = await fetch('/api/health?ts=' + Date.now(), { signal: ac.signal, cache: 'no-store' });
+          clearTimeout(killer);
+          if (r.ok) { mlReady = true; return true; }
+        } catch(_) {}
+        await sleep(backoff[Math.min(i, backoff.length - 1)]);
+      }
+      return false;
+    }
+
+    // Optional: UI hint habang ginigising
+    function showWakeHint(show=true) {
+      const sp = document.getElementById('loadingSpinner');
+      if (!sp) return;
+      sp.style.display = show ? 'flex' : 'none';
+      const p = sp.querySelector('p');
+      if (p) p.textContent = show ? 'Waking ML server...' : 'Analyzing...';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      showWakeHint(true);
+      const ok = await wakeML({ maxWait: 60_000, perTry: 7000 }); // up to ~1 min wait
+      showWakeHint(false);
+      if (!ok) {
+        // hindi pa gising, okay lang – gigising din pag pinindot ang Analyze
+        console.warn('ML server not awake yet; will wake on-demand.');
+      }
+});
+
     /* --------- Results list (fix NaN%) --------- */
     function updateDetectionsList() {
 

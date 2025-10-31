@@ -1,221 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home | Object Recognition and Navigation for Visually Impaired Person</title>
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* optional: mas kita ang annotated image */
+    #imagePreview { max-width: 100%; border-radius: 8px; }
+    .results-area ul { margin-top: .5rem; padding-left: 1.2rem; }
+  </style>
 </head>
-
 <body>
   <header>
     <div class="container">
       <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-      <a style="color: #fff;text-decoration: none;" href="/index.html">
-        <h1>Object Recognition and Navigation </h1></a>
+      <a style="color:#fff;text-decoration:none;" href="/index.html"><h1>Object Recognition and Navigation</h1></a>
       <nav>
         <ul id="navMenu">
           <li><a href="/index.html">Home</a></li>
-
-
-<li><a href="/information.html">Object information</a></li>
-
+          <li><a href="/information.html">Object information</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main style="padding-top: 5vh;" class="container">
+  <main style="padding-top:5vh" class="container">
     <section id="home" class="hero-section">
-      <h2>Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm &nbsp;</h2>
-      <p>Integrating deep-learning object detection to deliver real-time guidance and obstacle alerts for visually impaired users. .&nbsp;</p>
+      <h2>Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm</h2>
+      <p>Integrating deep-learning object detection to deliver guidance and obstacle alerts.</p>
+
       <div class="feature-grid">
-		  
         <div class="feature-card" data-target="detect" data-action="capture">
           <i class="fas fa-camera"></i>
           <h3>Capture Image</h3>
-          <p>Use your device camera to capture an object&nbsp; .</p>
+          <p>Use your device camera to capture an object.</p>
         </div>
         <div class="feature-card" data-target="detect" data-action="upload">
           <i class="fas fa-upload"></i>
           <h3>Upload Image</h3>
           <p>Upload an image from your gallery for analysis.</p>
         </div>
-       
         <div class="feature-card" data-target="information">
           <i class="fas fa-lightbulb"></i>
           <h3>Object information</h3>
-          <p>Learn more about Object Recognition and Navigation and their impact.</p>
+          <p>Learn more about object recognition and navigation.</p>
         </div>
-		  
       </div>
-		
     </section>
 
     <section id="detect" class="detection-section">
-<h2>Detect Object</h2>
+      <h2>Detect Object</h2>
       <div class="upload-area">
-        <p>Select or capture an image oof an object for analysis:</p>
+        <p>Select or capture an image of an object for analysis:</p>
+
+        <!-- Important: Huwag gawing form para walang implicit submit -->
         <input type="file" id="imageInput" name="image" accept="image/*">
         <button id="startCameraBtn" class="btn primary-btn"><i class="fas fa-camera"></i> Use Camera</button>
         <button id="uploadBtn" class="btn primary-btn"><i class="fas fa-upload"></i> Upload Image</button>
 
-        <!-- Inside <body> -->
         <div class="image-preview-container" data-pi-ip="10.0.0.103">
-        <div id="loadingSpinner" class="spinner-container" style="display: none;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><linearGradient id="a12"><stop offset="0" stop-color="#28A745" stop-opacity="0"></stop><stop offset="1" stop-color="#28A745"></stop></linearGradient><circle fill="none" stroke="url(#a12)" stroke-width="15" stroke-linecap="round" stroke-dasharray="0 44 0 44 0 44 0 44 0 360" cx="100" cy="100" r="70" transform-origin="center"><animateTransform type="rotate" attributeName="transform" calcMode="discrete" dur="2" values="360;324;288;252;216;180;144;108;72;36" repeatCount="indefinite"></animateTransform></circle></svg>
-          <!-- <img src="https://www.svgbackgrounds.com/svg/preloaders/spinning-dots.svg" alt="Loading..."
-            class="spinner-img"> -->
-          <p>Analyzing...</p>
-        </div>
+          <div id="loadingSpinner" class="spinner-container" style="display:none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+              <linearGradient id="a12"><stop offset="0" stop-color="#28A745" stop-opacity="0"/>
+                <stop offset="1" stop-color="#28A745"/></linearGradient>
+              <circle fill="none" stroke="url(#a12)" stroke-width="15" stroke-linecap="round"
+                      stroke-dasharray="0 44 0 44 0 44 0 44 0 360" cx="100" cy="100" r="70">
+                <animateTransform type="rotate" attributeName="transform" calcMode="discrete"
+                                  dur="2" values="360;324;288;252;216;180;144;108;72;36" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+            <p>Analyzing...</p>
+          </div>
           <video id="videoPreview" autoplay playsinline style="display:none"></video>
-          <img id="imagePreview">
+          <img id="imagePreview" alt="Preview">
           <p id="previewPlaceholder">No image selected</p>
-          <button id="captureBtn" class="btn" style="display:none;"><i class="fas fa-circle"
-              style="margin: 0!important;"></i></button>
+          <button id="captureBtn" class="btn" style="display:none;">
+            <i class="fas fa-circle" style="margin:0!important;"></i>
+          </button>
         </div>
 
-
-        <button id="analyzeImageBtn" class="btn success-btn" disabled><i class="fas fa-search"></i> Analyze
-          Image</button>
+        <button id="analyzeImageBtn" class="btn success-btn" disabled>
+          <i class="fas fa-search"></i> Analyze Image
+        </button>
       </div>
 
       <div id="resultsSection" class="results-area" style="display:none;">
         <h3>Analysis Results</h3>
-        <div class="result-item"><strong>Disease Type:</strong>
-          <span id="diseaseType"></span>
-        </div>
-        <div class="result-item"><strong>Confidence Score:</strong>
-          <span id="confidenceScore"></span>
-        </div>
-
+        <div class="result-item"><strong>Disease Type:</strong> <span id="diseaseType"></span></div>
+        <div class="result-item"><strong>Confidence Score:</strong> <span id="confidenceScore"></span></div>
         <div class="result-description">
-          <h4>Description:</h4>
-          <p id="diseaseDescription"></p>
+          <h4>Description:</h4><p id="diseaseDescription"></p>
         </div>
-
         <div class="prescription-mitigation">
-          <h4>Prescription:</h4>
-          <ul id="prescription">
-            <li></li>
-          </ul>
-          <h4>Mitigation Strategies:</h4>
-          <ul id="mitigation">
-            <li></li>
-          </ul>
+          <h4>Prescription:</h4><ul id="prescription"><li></li></ul>
+          <h4>Mitigation Strategies:</h4><ul id="mitigation"><li></li></ul>
         </div>
-
-        <button class="btn share-btn">
-          <i class="fas fa-share-alt"></i> Share Results
-        </button>
+        <ul id="resultsList"></ul>
+        <button class="btn share-btn"><i class="fas fa-share-alt"></i> Share Results</button>
       </div>
-
-    
-
+    </section>
   </main>
 
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 Object Recognition and Navigation. All rights reserved.</p>
-    </div>
-  </footer>
+  <footer><div class="container"><p>&copy; 2025 Object Recognition and Navigation. All rights reserved.</p></div></footer>
 
   <!-- Fullscreen image modal -->
   <div id="imageModal" class="modal"
-    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
-    <img id="modalImg" src="" style="object-fit: contain;object-position: center;width:100%; max-height:90%;">
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;justify-content:center;align-items:center;">
+    <img id="modalImg" src="" style="object-fit:contain;object-position:center;width:100%;max-height:90%;">
   </div>
-  <script src="script.js"></script>
+
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // Smooth scroll for internal nav on same page
-      const navMenu = document.getElementById("navMenu");
-
-      document.querySelectorAll("#navMenu a[data-target]").forEach((menuItem) => {
-        menuItem.addEventListener("click", function (e) {
-          e.preventDefault();
-
-          const targetId = this.getAttribute("data-target");
-          const targetSection = document.getElementById(targetId);
-
-          if (targetSection) {
-            targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-
-          navMenu.classList.remove("show");
+    /* ===== Smooth section scroll & feature actions ===== */
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const targetId = card.getAttribute('data-target');
+          const action   = card.getAttribute('data-action');
+          const target   = document.getElementById(targetId);
+          if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+          if (action === 'capture') document.getElementById('startCameraBtn').click();
+          if (action === 'upload')  document.getElementById('uploadBtn').click();
+          if (targetId === 'information') window.location.href = '/information';
         });
       });
 
-      // If URL contains hash (e.g. /home/#history), scroll to it smoothly
       const hash = window.location.hash;
       if (hash) {
-        const sectionId = hash.substring(1); // remove the '#' character
-        const targetSection = document.getElementById(sectionId);
-
-        if (targetSection) {
-          // Use setTimeout to delay scroll until after initial render
-          setTimeout(() => {
-            targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
-          }, 100);
-        }
+        const t = document.getElementById(hash.substring(1));
+        if (t) setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}), 100);
       }
     });
-
-  </script>
-  <script>
-    document.querySelectorAll('.feature-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const targetId = card.getAttribute('data-target');
-        const actionType = card.getAttribute('data-action');
-        const targetSection = document.getElementById(targetId);
-
-        if (targetSection) {
-          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // Trigger specific actions based on data-action
-        if (actionType === 'capture') {
-          document.getElementById('startCameraBtn').click();
-        } else if (actionType === 'upload') {
-          document.getElementById('uploadBtn').click();
-        }
-        if (targetId === 'analytics') {
-          window.location.href = '/analytics';
-        } else if (targetId === 'information') {
-          window.location.href = '/information';
-        }
-      });
-    });
-
-
   </script>
 
-  <!-- Inside <script type="module"> -->
+  <!-- ========= Core App Logic (combined) ========= -->
   <script type="module">
-    const imageInput = document.getElementById('imageInput');
+    const imageInput  = document.getElementById('imageInput');
     const placeholder = document.getElementById('previewPlaceholder');
-    const analyzeBtn = document.getElementById('analyzeImageBtn');
-    const resultsBox = document.getElementById('resultsSection');
-    const videoPrev = document.getElementById('videoPreview');
-    const imagePrev = document.getElementById('imagePreview');
-    const startBtn = document.getElementById('startCameraBtn');
-    const captureBtn = document.getElementById('captureBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
+    const analyzeBtn  = document.getElementById('analyzeImageBtn');
+    const resultsBox  = document.getElementById('resultsSection');
+    const videoPrev   = document.getElementById('videoPreview');
+    const imagePrev   = document.getElementById('imagePreview');
+    const startBtn    = document.getElementById('startCameraBtn');
+    const captureBtn  = document.getElementById('captureBtn');
+    const uploadBtn   = document.getElementById('uploadBtn');
+
+    const diseaseTypeEl      = document.getElementById('diseaseType');
+    const confidenceScoreEl  = document.getElementById('confidenceScore');
 
     let stream = null;
     let currentImageFile = null;
-    let currentAnalysis = null;
-    let inFlightController = null; 
+    let currentAnalysis  = null;
 
+    /* --------- HARD GUARDS: never auto-analyze --------- */
+    let isAnalyzing   = false;  // single-flight
+    let ALLOW_PROCESS = false;  // Analyze button only
 
-    imageInput.addEventListener('change', e => fileSelected(e.target.files[0]));
-    imagePrev.addEventListener('click', () => {
-      if (imagePrev.src) {
-        window.openFullscreen(imagePrev.src);
-      }
+    // Prevent any implicit 'submit'
+    document.querySelectorAll('form').forEach(f => {
+      f.addEventListener('submit', e => e.preventDefault(), { capture:true });
     });
+    if (analyzeBtn && analyzeBtn.type !== 'button') analyzeBtn.type = 'button';
+
+    /* --------- Preview-only handlers --------- */
+    imageInput.addEventListener('change', e => setPreviewFile(e.target.files?.[0]));
 
     uploadBtn.addEventListener('click', () => {
       imageInput.click();
@@ -226,7 +175,11 @@
       captureBtn.style.display = 'none';
     });
 
-    async function fileSelected(file) {
+    imagePrev.addEventListener('click', () => {
+      if (imagePrev.src) openFullscreen(imagePrev.src);
+    });
+
+    function setPreviewFile(file) {
       if (!file) return;
       currentImageFile = file;
       const reader = new FileReader();
@@ -240,23 +193,19 @@
       reader.readAsDataURL(file);
     }
 
+    /* --------- Camera capture --------- */
     startBtn.addEventListener('click', async () => {
       try {
-        // Try any available video input device
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" } // "user" = front camera, works on most devices
-        });
-      } catch (err1) {
-        console.warn("Default camera failed, trying fallback:", err1);
         try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        } catch {
           stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        } catch (err2) {
-          console.error("Camera access error:", err2);
-          alert("Unable to access your camera. Please allow camera permissions or check your settings.");
-          return;
         }
+      } catch (err) {
+        console.error("Camera access error:", err);
+        alert("Unable to access your camera. Please allow permissions.");
+        return;
       }
-
       videoPrev.srcObject = stream;
       videoPrev.style.display = 'block';
       startBtn.style.display = 'none';
@@ -267,11 +216,10 @@
       currentImageFile = null;
     });
 
-
     captureBtn.addEventListener('click', () => {
       captureBtn.style.display = 'none';
       const canvas = document.createElement('canvas');
-      canvas.width = videoPrev.videoWidth;
+      canvas.width  = videoPrev.videoWidth;
       canvas.height = videoPrev.videoHeight;
       canvas.getContext('2d').drawImage(videoPrev, 0, 0);
       canvas.toBlob(blob => {
@@ -286,280 +234,117 @@
         };
         reader.readAsDataURL(blob);
       }, 'image/jpeg');
-
       stopCamera();
     });
 
-    function stopCamera() {
-      stream?.getTracks().forEach(t => t.stop());
+    function stopCamera() { stream?.getTracks().forEach(t => t.stop()); }
+
+    /* --------- Results list (fix NaN%) --------- */
+    function updateDetectionsList(analysis) {
+      const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
+      const ul   = document.getElementById('resultsList');
+      ul.innerHTML = dets.length
+        ? dets.map(d => {
+            const raw  = d.confidence ?? d.conf ?? d.score ?? d.prob ?? 0;
+            const conf = Number(raw);
+            const pct  = Number.isFinite(conf) ? Math.round(conf * 100) : 0;
+            const label= String(d.label ?? d.class ?? d.name ?? 'object');
+            return `<li>${label} — ${pct}%</li>`;
+          }).join('')
+        : '<li>No objects detected.</li>';
     }
 
-    // === Analyze button ===
-    /* ---------- Single-flight state ---------- */
-let isAnalyzing = false;
+    /* --------- Analyze button: the ONLY path that can process() --------- */
+    if (!window.__wiredAnalyze) {
+      window.__wiredAnalyze = true;
+      analyzeBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (isAnalyzing) return;
+        if (!currentImageFile) { alert('Please select or capture an image first.'); return; }
 
-/* ---------- Render detections (fixes NaN%) ---------- */
-function updateDetectionsList(analysis) {
-  const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
-  let ul = document.querySelector('#resultsList');
-  if (!ul) {
-    ul = document.createElement('ul');
-    ul.id = 'resultsList';
-    (resultsBox || document.body).appendChild(ul);
-  }
-  ul.innerHTML = dets.length
-    ? dets.map(d => {
-        const raw = d.confidence ?? d.score ?? d.prob ?? d.conf ?? 0;
-        const conf = Number(raw);
-        const pct = Number.isFinite(conf) ? Math.round(conf * 100) : 0;
-        const label = String(d.label ?? d.class ?? d.name ?? 'object');
-        return `<li>${label} — ${pct}%</li>`;
-      }).join('')
-    : '<li>No objects detected.</li>';
-}
+        isAnalyzing   = true;
+        ALLOW_PROCESS = true;
 
-/* ---------- Analyze button (guarded, single bind) ---------- */
-if (!window.__wiredAnalyze) {
-  window.__wiredAnalyze = true;
+        // lock UI + spinner
+        const sp = document.getElementById('loadingSpinner');
+        if (sp) sp.style.display = 'flex';
+        [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b=>b && (b.disabled = true));
+        resultsBox.style.display = 'none';
 
-  analyzeBtn?.addEventListener('click', async (e) => {
-    e?.preventDefault?.();
-
-    if (isAnalyzing) {
-      console.warn('Analyze blocked: still running');
-      return; // iwas double fire
-    }
-    if (!currentImageFile) {
-      alert('Please select or capture an image first.');
-      return;
+        try {
+          const fd = new FormData();
+          fd.append('image', currentImageFile, currentImageFile.name || 'upload.jpg');
+          const ok = await process(fd);
+          if (!ok) console.warn('Analyze failed.');
+        } finally {
+          if (sp) sp.style.display = 'none';
+          [startBtn, uploadBtn, captureBtn, analyzeBtn].forEach(b=>b && (b.disabled = false));
+          isAnalyzing = false;
+        }
+      });
     }
 
-    // lock UI + spinner
-    isAnalyzing = true;
-    startBtn && (startBtn.disabled = true);
-    uploadBtn && (uploadBtn.disabled = true);
-    captureBtn && (captureBtn.disabled = true);
-    analyzeBtn && (analyzeBtn.disabled = true);
-    resultsBox && (resultsBox.style.display = 'none');
-    const spinner = document.getElementById('loadingSpinner');
-    if (spinner) spinner.style.display = 'flex';
-
-    try {
-      const fd = new FormData();
-      fd.append('image', currentImageFile, currentImageFile.name || 'upload.jpg');
-      const ok = await process(fd);   // no abort, one-at-a-time
-      if (!ok) console.warn('Analyze failed.');
-    } finally {
-      if (spinner) spinner.style.display = 'none';
-      startBtn && (startBtn.disabled = false);
-      uploadBtn && (uploadBtn.disabled = false);
-      captureBtn && (captureBtn.disabled = false);
-      analyzeBtn && (analyzeBtn.disabled = false);
-      isAnalyzing = false;            // allow next run
-    }
-  });
-}
-
-/* ---------- Core request/response (no abort; hard timeout only) ---------- */
-async function process(formData) {
-  try {
-    const uploadURL = '/api/detect'; // Vercel 307 → Render
-
-    // hard timeout lang; huwag i-abort ang “previous” (iiwan nito ang orphan compute sa Render)
-    const ac = new AbortController();
-    const t = setTimeout(() => ac.abort('timeout'), 180_000); // 3 min
-    const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
-      .finally(() => clearTimeout(t));
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      alert(`❌ Failed to analyze image.\nHTTP ${res.status} ${text}`);
-      return false;
-    }
-
-    const data = await res.json();
-    const annotated = data.image_base64 || data.annotated_image_url || '';
-    if (annotated) imagePrev.src = annotated;
-
-    window.currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
-
-    imagePrev.style.display = 'block';
-    resultsBox && (resultsBox.style.display = 'block');
-
-    updateDetectionsList(window.currentAnalysis);
-
-    if (window.appendToHistory && (window.currentAnalysis?.detections?.length || 0) > 0) {
-      window.appendToHistory(window.currentAnalysis);
-    }
-    return true;
-
-  } catch (err) {
-    if (err?.name === 'AbortError') {
-      alert('❌ Analyze timed out. Please try again.');
-      return false;
-    }
-    console.error(err);
-    alert('❌ Failed to analyze image. (Network error)');
-    imagePrev.style.display = 'block';
-    resultsBox && (resultsBox.style.display = 'block');
-    return false;
-  }
-}
-
-
-
-  </script>
-
-  <script type="module">
-    const historyList = document.getElementById('historyList');
-    const noHistoryMessage = document.getElementById('noHistoryMessage');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const PAGE_SIZE = 10;
-
-    let currentPage = 1;
-    let totalItems = 0;
-    let loadedItems = 0;
-
-    let loadedList = [];
-
-    async function loadNextPage() {
+    /* --------- Core request (gated; hard timeout only) --------- */
+    async function process(formData) {
+      if (!ALLOW_PROCESS) { console.warn('process() ignored: not from Analyze'); return false; }
       try {
-        const historyURL = `/api/history?page=${currentPage}&limit=${PAGE_SIZE}`;
-        const response = await fetch(historyURL);
-        const { data, total } = await response.json();
+        const uploadURL = '/api/detect'; // works both localhost & vercel
+        const ac = new AbortController();
+        const t  = setTimeout(() => ac.abort('timeout'), 180000); // 3 min
+        const res = await fetch(uploadURL, { method: 'POST', body: formData, signal: ac.signal })
+            .finally(()=>clearTimeout(t));
 
-        if (!data || data.length === 0) {
-          if (loadedItems === 0) noHistoryMessage.style.display = 'block';
-          loadMoreBtn.style.display = 'none';
-          return;
+        if (!res.ok) {
+          const text = await res.text().catch(()=> '');
+          alert(`❌ Failed to analyze image.\nHTTP ${res.status} ${text}`);
+          return false;
         }
 
-        noHistoryMessage.style.display = 'none';
-        totalItems = total;
+        const data = await res.json();
+        const annotated = data.image_base64 || data.annotated_image_url || '';
+        if (annotated) imagePrev.src = annotated;
 
-        data.forEach(item => {
-          const historyItem = document.createElement('div');
-          historyItem.className = 'history-item';
-          historyItem.innerHTML = `
-        <div class="history-item-header">
-          <div class="history-details">
-            <strong>Date:</strong>
-            ${new Date(item.created_at).toLocaleString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric',
-            minute: '2-digit', hour12: true
-          })}<br>
-            <strong>Disease:</strong> ${item.disease_type}<br>
-            <strong>Confidence:</strong> ${item.confidence_score}%
-          </div>
-          <button class="btn view-details-btn">View Details</button>
-        </div>
-        <div class="history-expanded-details">
-          <img src="${item.annotated_image_url}" onclick="openFullscreen('${item.annotated_image_url}')" style="cursor: pointer; max-height:200px; border:1px solid #888; margin-bottom:10px;">
-          <div class="history-item-content">
-            <p><strong>Description:</strong> ${item.description}</p>
-            <p><strong>Prescription:</strong> ${item.prescription}</p>
-            <p><strong>Mitigation:</strong> ${item.mitigation_strategies}</p>
-          </div>
-        </div>
-        `;
+        currentAnalysis = { ...data, annotated_image_url: annotated || imagePrev.src };
 
-          const detailsBtn = historyItem.querySelector('.view-details-btn');
-          const expandedDetails = historyItem.querySelector('.history-expanded-details');
-          detailsBtn.addEventListener('click', () => {
-            expandedDetails.classList.toggle("open");
-            detailsBtn.innerText = expandedDetails.classList.contains("open") ? "Hide Details" : "View Details";
-          });
+        // top fields (compatible with unified main.py)
+        const objType = currentAnalysis.object_type ?? '';
+        const topPct  = Number.isFinite(Number(currentAnalysis.confidence_score))
+                        ? Number(currentAnalysis.confidence_score)
+                        : 0;
+        diseaseTypeEl.textContent     = objType || (currentAnalysis?.detections?.[0]?.label ?? '');
+        confidenceScoreEl.textContent = `${topPct}%`;
 
-          historyList.appendChild(historyItem);
-          loadedList.push(item);
-        });
+        imagePrev.style.display = 'block';
+        resultsBox.style.display = 'block';
+        updateDetectionsList(currentAnalysis);
 
-        loadedItems += data.length;
-        currentPage++;
-
-        loadMoreBtn.style.display = loadedItems < totalItems ? 'block' : 'none';
+        // optional: history hook if present
+        if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
+          window.appendToHistory(currentAnalysis);
+        }
+        return true;
 
       } catch (err) {
-        console.error('Failed to load history:', err);
-        noHistoryMessage.style.display = 'block';
-        loadMoreBtn.style.display = 'none';
+        if (err?.name === 'AbortError') { alert('❌ Analyze timed out. Please try again.'); return false; }
+        console.error(err);
+        alert('❌ Failed to analyze image. (Network error)');
+        imagePrev.style.display  = 'block';
+        resultsBox.style.display = 'block';
+        return false;
+      } finally {
+        ALLOW_PROCESS = false; // gate closes after each analyze
       }
     }
 
-    // Initial load
-    document.addEventListener('DOMContentLoaded', () => {
-      loadNextPage();
-    });
-
-    // Load more click
-    loadMoreBtn.addEventListener('click', () => {
-      loadNextPage();
-    });
-
-    // Fullscreen image viewer
+    /* --------- Fullscreen viewer --------- */
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImg');
-    window.openFullscreen = function (src) {
-      modalImg.src = src;
-      modal.style.display = 'flex';
-    };
-    modal.addEventListener('click', () => {
-      modal.style.display = 'none';
-      modalImg.src = '';
-    });
-
-    // 🔁 Dynamic injection for new analysis
-    window.appendToHistory = function (entry) {
-      // Create the item DOM and inject to top
-      if (loadedList.some(item => item.id === entry.id)) {
-        return;
-      };
-      loadedList.pop();
-      loadedList.unshift(entry);
-      console.log("Appending to history:", loadedList);
-      const historyItem = document.createElement('div');
-      historyItem.className = 'history-item';
-      historyItem.innerHTML = `
-      <div class="history-item-header">
-        <div class="history-details">
-          <strong>Date:</strong>
-          ${new Date(entry.created_at).toLocaleString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric',
-        minute: '2-digit', hour12: true
-      })}<br>
-          <strong>Disease:</strong> ${entry.disease_type}<br>
-          <strong>Confidence:</strong> ${entry.confidence_score}%
-        </div>
-        <button class="btn view-details-btn">View Details</button>
-      </div>
-      <div class="history-expanded-details">
-        <img src="${entry.annotated_image_url}" onclick="openFullscreen('${entry.annotated_image_url}')" style="cursor: pointer; max-height:200px; border:1px solid #888; margin-bottom:10px;">
-        <div class="history-item-content">
-          <p><strong>Description:</strong> ${entry.description}</p>
-          <p><strong>Prescription:</strong> ${entry.prescription}</p>
-          <p><strong>Mitigation:</strong> ${entry.mitigation_strategies}</p>
-        </div>
-      </div>
-    `;
-
-      const detailsBtn = historyItem.querySelector('.view-details-btn');
-      const expandedDetails = historyItem.querySelector('.history-expanded-details');
-      detailsBtn.addEventListener('click', () => {
-        expandedDetails.classList.toggle("open");
-        detailsBtn.innerText = expandedDetails.classList.contains("open") ? "Hide Details" : "View Details";
-      });
-
-      historyList.insertBefore(historyItem, historyList.firstChild);
-      historyList.removeChild(historyList.lastChild);
-      totalItems++;
-      loadMoreBtn.style.display = loadedItems < totalItems ? 'block' : 'none';
-    };
+    function openFullscreen(src) { modalImg.src = src; modal.style.display = 'flex'; }
+    modal.addEventListener('click', () => { modal.style.display = 'none'; modalImg.src = ''; });
+    window.openFullscreen = openFullscreen;
   </script>
-	  
-	  <script src="./script.js" defer></script>
 
-    
-<!--
+  <!--
 <script>
 (function () {
   function byId(id) { return document.getElementById(id); }
@@ -782,5 +567,4 @@ async function process(formData) {
 </script>
 -->
 </body>
-
 </html>

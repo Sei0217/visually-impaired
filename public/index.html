@@ -88,9 +88,9 @@
 
       <div id="resultsSection" class="results-area" style="display:none;">
         <h3>Analysis Results</h3>
-        <div class="result-item"><strong>Disease Type:</strong> <span id="diseaseType"></span></div>
+        <div class="result-item"><strong>Object Type:</strong> <span id="diseaseType"></span></div>
         <div class="result-item"><strong>Confidence Score:</strong> <span id="confidenceScore"></span></div>
-        
+        <ul id="resultsList"></ul>
       </div>
     </section>
   </main>
@@ -234,7 +234,6 @@
     /* --------- Results list (fix NaN%) --------- */
     function updateDetectionsList(analysis) {
       const dets = Array.isArray(analysis?.detections) ? analysis.detections : [];
-      const ul   = document.getElementById('resultsList');
       ul.innerHTML = dets.length
         ? dets.map(d => {
             const raw  = d.confidence ?? d.conf ?? d.score ?? d.prob ?? 0;

@@ -70,9 +70,6 @@ async function dataURLtoBlob(dataURL) {
 
 // ---------- Upload flow ----------
 // Upload button click handler
-const uploadBtn = document.getElementById('uploadBtn');
-let activeStream = null; // Track active camera stream
-
 
 // Helper function to stop camera
 function stopCamera() {

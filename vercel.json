@@ -1,7 +1,4 @@
 {
-  "functions": {
-    "api/detect.cjs": { "runtime": "nodejs22.x" }
-  },
   "rewrites": [
     { "source": "/api/upload", "destination": "/api/upload" },
     { "source": "/api/history", "destination": "/api/history" },

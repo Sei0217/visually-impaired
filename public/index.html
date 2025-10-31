@@ -13,13 +13,14 @@
   <header>
     <div class="container">
       <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-      <a style="color: #fff;text-decoration: none;" href="/index.html">
-        <h1>Object Recognition and Navigation </h1>
-      </a>
+      <a style="color: #fff;text-decoration: none;" href=/index.html"><h1>Object Recognition and Navigation </h1></a>
       <nav>
         <ul id="navMenu">
           <li><a href="/index.html">Home</a></li>
-          <li><a href="/information.html">Object information</a></li>
+
+
+<li><a href="/information.html">Object information</a></li>
+
         </ul>
       </nav>
     </div>
@@ -27,66 +28,91 @@
 
   <main style="padding-top: 5vh;" class="container">
     <section id="home" class="hero-section">
-      <h2>Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm</h2>
-      <p>Integrating deep-learning object detection to deliver real-time guidance and obstacle alerts for visually impaired users.</p>
+      <h2>Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm &nbsp;</h2>
+      <p>Integrating deep-learning object detection to deliver real-time guidance and obstacle alerts for visually impaired users. .&nbsp;</p>
       <div class="feature-grid">
+		  
         <div class="feature-card" data-target="detect" data-action="capture">
           <i class="fas fa-camera"></i>
           <h3>Capture Image</h3>
-          <p>Use your device camera to capture an object.</p>
+          <p>Use your device camera to capture an object&nbsp; .</p>
         </div>
         <div class="feature-card" data-target="detect" data-action="upload">
           <i class="fas fa-upload"></i>
           <h3>Upload Image</h3>
           <p>Upload an image from your gallery for analysis.</p>
         </div>
+       
         <div class="feature-card" data-target="information">
           <i class="fas fa-lightbulb"></i>
           <h3>Object information</h3>
           <p>Learn more about Object Recognition and Navigation and their impact.</p>
         </div>
+		  
       </div>
+		
     </section>
 
     <section id="detect" class="detection-section">
-      <h2>Detect Objects</h2>
+<h2>Detect Object</h2>
       <div class="upload-area">
-        <p>Select or capture an image for object detection:</p>
+        <p>Select or capture an image oof an object for analysis:</p>
         <input type="file" id="imageInput" accept="image/jpeg,image/jpg,image/png,image/webp">
         <button id="startCameraBtn" class="btn primary-btn"><i class="fas fa-camera"></i> Use Camera</button>
         <button id="uploadBtn" class="btn primary-btn"><i class="fas fa-upload"></i> Upload Image</button>
 
-        <div class="image-preview-container">
-          <div id="loadingSpinner" class="spinner-container" style="display: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-              <linearGradient id="a12">
-                <stop offset="0" stop-color="#28A745" stop-opacity="0"></stop>
-                <stop offset="1" stop-color="#28A745"></stop>
-              </linearGradient>
-              <circle fill="none" stroke="url(#a12)" stroke-width="15" stroke-linecap="round"
-                stroke-dasharray="0 44 0 44 0 44 0 44 0 360" cx="100" cy="100" r="70" transform-origin="center">
-                <animateTransform type="rotate" attributeName="transform" calcMode="discrete" dur="2"
-                  values="360;324;288;252;216;180;144;108;72;36" repeatCount="indefinite"></animateTransform>
-              </circle>
-            </svg>
-            <p>Analyzing...</p>
-          </div>
-          <video id="videoPreview" autoplay playsinline style="display:none; max-width:100%; border-radius:8px;"></video>
-          <img id="imagePreview" style="display:none; max-width:100%; border-radius:8px;">
-          <img id="result" style="display:none; max-width:100%; border-radius:8px;">
+        <!-- Inside <body> -->
+        <div class="image-preview-container" data-pi-ip="10.0.0.103">
+        <div id="loadingSpinner" class="spinner-container" style="display: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><linearGradient id="a12"><stop offset="0" stop-color="#28A745" stop-opacity="0"></stop><stop offset="1" stop-color="#28A745"></stop></linearGradient><circle fill="none" stroke="url(#a12)" stroke-width="15" stroke-linecap="round" stroke-dasharray="0 44 0 44 0 44 0 44 0 360" cx="100" cy="100" r="70" transform-origin="center"><animateTransform type="rotate" attributeName="transform" calcMode="discrete" dur="2" values="360;324;288;252;216;180;144;108;72;36" repeatCount="indefinite"></animateTransform></circle></svg>
+          <!-- <img src="https://www.svgbackgrounds.com/svg/preloaders/spinning-dots.svg" alt="Loading..."
+            class="spinner-img"> -->
+          <p>Analyzing...</p>
+        </div>
+          <video id="videoPreview" autoplay playsinline style="display:none"></video>
+          <img id="imagePreview">
           <p id="previewPlaceholder">No image selected</p>
-          <button id="captureBtn" class="btn" style="display:none;"><i class="fas fa-circle" style="margin: 0!important;"></i></button>
+          <button id="captureBtn" class="btn" style="display:none;"><i class="fas fa-circle"
+              style="margin: 0!important;"></i></button>
         </div>
 
+
+        <button id="analyzeImageBtn" class="btn success-btn" disabled><i class="fas fa-search"></i> Analyze
+          Image</button>
       </div>
 
       <div id="resultsSection" class="results-area" style="display:none;">
-        <h3>Detected Objects</h3>
-        <ul id="resultList" style="list-style: none; padding: 0;">
-          <!-- Results will be populated here by script.js -->
-        </ul>
+        <h3>Analysis Results</h3>
+        <div class="result-item"><strong>Disease Type:</strong>
+          <span id="diseaseType"></span>
+        </div>
+        <div class="result-item"><strong>Confidence Score:</strong>
+          <span id="confidenceScore"></span>
+        </div>
+
+        <div class="result-description">
+          <h4>Description:</h4>
+          <p id="diseaseDescription"></p>
+        </div>
+
+        <div class="prescription-mitigation">
+          <h4>Prescription:</h4>
+          <ul id="prescription">
+            <li></li>
+          </ul>
+          <h4>Mitigation Strategies:</h4>
+          <ul id="mitigation">
+            <li></li>
+          </ul>
+        </div>
+
+        <button class="btn share-btn">
+          <i class="fas fa-share-alt"></i> Share Results
+        </button>
       </div>
-    </section>
+
+    
+
   </main>
 
   <footer>
@@ -97,12 +123,628 @@
 
   <!-- Fullscreen image modal -->
   <div id="imageModal" class="modal"
-    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:pointer;">
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
     <img id="modalImg" src="" style="object-fit: contain;object-position: center;width:100%; max-height:90%;">
   </div>
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Smooth scroll for internal nav on same page
+      const navMenu = document.getElementById("navMenu");
 
-  <!-- Main detection script - handles all camera and detection logic -->
-  <script src="./script.js" defer></script>
+      document.querySelectorAll("#navMenu a[data-target]").forEach((menuItem) => {
+        menuItem.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          const targetId = this.getAttribute("data-target");
+          const targetSection = document.getElementById(targetId);
+
+          if (targetSection) {
+            targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+
+          navMenu.classList.remove("show");
+        });
+      });
+
+      // If URL contains hash (e.g. /home/#history), scroll to it smoothly
+      const hash = window.location.hash;
+      if (hash) {
+        const sectionId = hash.substring(1); // remove the '#' character
+        const targetSection = document.getElementById(sectionId);
+
+        if (targetSection) {
+          // Use setTimeout to delay scroll until after initial render
+          setTimeout(() => {
+            targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
+        }
+      }
+    });
+
+  </script>
+  <script>
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const targetId = card.getAttribute('data-target');
+        const actionType = card.getAttribute('data-action');
+        const targetSection = document.getElementById(targetId);
+
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Trigger specific actions based on data-action
+        if (actionType === 'capture') {
+          document.getElementById('startCameraBtn').click();
+        } else if (actionType === 'upload') {
+          document.getElementById('uploadBtn').click();
+        }
+        if (targetId === 'analytics') {
+          window.location.href = '/analytics';
+        } else if (targetId === 'information') {
+          window.location.href = '/information';
+        }
+      });
+    });
+
+
+  </script>
+
+  <!-- Inside <script type="module"> -->
+  <script type="module">
+    const imageInput = document.getElementById('imageInput');
+    const placeholder = document.getElementById('previewPlaceholder');
+    const analyzeBtn = document.getElementById('analyzeImageBtn');
+    const resultsBox = document.getElementById('resultsSection');
+    const videoPrev = document.getElementById('videoPreview');
+    const imagePrev = document.getElementById('imagePreview');
+    const startBtn = document.getElementById('startCameraBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    let stream = null;
+    let currentImageFile = null;
+    let currentAnalysis = null;
+    let inFlightController = null; 
+
+
+    imageInput.addEventListener('change', e => fileSelected(e.target.files[0]));
+    imagePrev.addEventListener('click', () => {
+      if (imagePrev.src) {
+        window.openFullscreen(imagePrev.src);
+      }
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      imageInput.click();
+      stopCamera();
+      videoPrev.style.display = 'none';
+      imagePrev.style.display = 'block';
+      placeholder.style.display = 'none';
+      captureBtn.style.display = 'none';
+    });
+
+    async function fileSelected(file) {
+      if (!file) return;
+      currentImageFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        imagePrev.src = e.target.result;
+        imagePrev.style.display = 'block';
+        placeholder.style.display = 'none';
+        analyzeBtn.disabled = false;
+        resultsBox.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        // Try any available video input device
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" } // "user" = front camera, works on most devices
+        });
+      } catch (err1) {
+        console.warn("Default camera failed, trying fallback:", err1);
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (err2) {
+          console.error("Camera access error:", err2);
+          alert("Unable to access your camera. Please allow camera permissions or check your settings.");
+          return;
+        }
+      }
+
+      videoPrev.srcObject = stream;
+      videoPrev.style.display = 'block';
+      startBtn.style.display = 'none';
+      captureBtn.style.display = 'inline-flex';
+      placeholder.style.display = 'none';
+      analyzeBtn.disabled = true;
+      imagePrev.style.display = 'none';
+      currentImageFile = null;
+    });
+
+
+    captureBtn.addEventListener('click', () => {
+      captureBtn.style.display = 'none';
+      const canvas = document.createElement('canvas');
+      canvas.width = videoPrev.videoWidth;
+      canvas.height = videoPrev.videoHeight;
+      canvas.getContext('2d').drawImage(videoPrev, 0, 0);
+      canvas.toBlob(blob => {
+        currentImageFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+        const reader = new FileReader();
+        reader.onload = e => {
+          imagePrev.src = e.target.result;
+          imagePrev.style.display = 'block';
+          videoPrev.style.display = 'none';
+          startBtn.style.display = 'inline-flex';
+          analyzeBtn.disabled = false;
+        };
+        reader.readAsDataURL(blob);
+      }, 'image/jpeg');
+
+      stopCamera();
+    });
+
+    function stopCamera() {
+      stream?.getTracks().forEach(t => t.stop());
+    }
+
+    analyzeBtn.addEventListener('click', async () => {
+      // UI lock + spinner gaya ng dati
+      startBtn.disabled = true;
+      uploadBtn.disabled = true;
+      captureBtn.disabled = true;
+      analyzeBtn.disabled = true;
+      resultsBox.style.display = 'none';
+      document.getElementById('loadingSpinner').style.display = 'flex';
+
+      try {
+        let formData = new FormData();
+        if (currentImageFile) {
+          formData.append('image', currentImageFile);
+
+          // CHANGE: gawing optional ang call para 'di mag-throw kapag undefined
+          if (
+            currentAnalysis?.detections?.length > 0 &&
+            currentAnalysis?.annotated_image_url &&
+            currentAnalysis.annotated_image_url !== imagePrev.src
+          ) {
+            window.appendToHistory?.(currentAnalysis);
+          }
+
+
+          await process(formData);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('❌ Failed to analyze image.');
+      } finally {
+        // ALWAYS unlock UI kahit nag-error bago tumawag sa process()
+        document.getElementById('loadingSpinner').style.display = 'none';
+        startBtn.disabled = false;
+        uploadBtn.disabled = false;
+        captureBtn.disabled = false;
+        analyzeBtn.disabled = false;
+      }
+    });
+
+
+    async function process(formData) {
+      try {
+        const uploadURL = `/api/detect`;
+
+        // ADD: abort previous in-flight request para 'di magkapatong ang fetch
+        try { inFlightController?.abort(); } catch {}
+        inFlightController = new AbortController();
+        const signal = inFlightController.signal;
+
+        const res = await fetch(uploadURL, { method: 'POST', body: formData, signal });
+
+        // ADD: huwag mag-json kapag hindi OK ang status (para hindi ma-stuck)
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status} ${text}`);
+        }
+
+        currentAnalysis = await res.json();
+
+        if (currentAnalysis.annotated_image_url) {
+          imagePrev.src = currentAnalysis.annotated_image_url;
+        } else {
+          currentAnalysis.annotated_image_url = imagePrev.src;
+        }
+        imagePrev.style.display = 'block';
+        resultsBox.style.display = 'block';
+
+        // (UI unlocking lipat na tayo sa finally ng click handler)
+      } catch (err) {
+        if (err?.name === 'AbortError') {
+          // tahimik lang kapag may bagong analyze na nag-cancel dito
+          return;
+        }
+        console.error(err);
+        alert('❌ Failed to analyze image.');
+        imagePrev.style.display = 'block';
+        resultsBox.style.display = 'block';
+      }
+    }
+  </script>
+
+  <script type="module">
+    const historyList = document.getElementById('historyList');
+    const noHistoryMessage = document.getElementById('noHistoryMessage');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const PAGE_SIZE = 10;
+
+    let currentPage = 1;
+    let totalItems = 0;
+    let loadedItems = 0;
+
+    let loadedList = [];
+
+    async function loadNextPage() {
+      try {
+        const historyURL = `/api/history?page=${currentPage}&limit=${PAGE_SIZE}`;
+        const response = await fetch(historyURL);
+        const { data, total } = await response.json();
+
+        if (!data || data.length === 0) {
+          if (loadedItems === 0) noHistoryMessage.style.display = 'block';
+          loadMoreBtn.style.display = 'none';
+          return;
+        }
+
+        noHistoryMessage.style.display = 'none';
+        totalItems = total;
+
+        data.forEach(item => {
+          const historyItem = document.createElement('div');
+          historyItem.className = 'history-item';
+          historyItem.innerHTML = `
+        <div class="history-item-header">
+          <div class="history-details">
+            <strong>Date:</strong>
+            ${new Date(item.created_at).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric',
+            minute: '2-digit', hour12: true
+          })}<br>
+            <strong>Disease:</strong> ${item.disease_type}<br>
+            <strong>Confidence:</strong> ${item.confidence_score}%
+          </div>
+          <button class="btn view-details-btn">View Details</button>
+        </div>
+        <div class="history-expanded-details">
+          <img src="${item.annotated_image_url}" onclick="openFullscreen('${item.annotated_image_url}')" style="cursor: pointer; max-height:200px; border:1px solid #888; margin-bottom:10px;">
+          <div class="history-item-content">
+            <p><strong>Description:</strong> ${item.description}</p>
+            <p><strong>Prescription:</strong> ${item.prescription}</p>
+            <p><strong>Mitigation:</strong> ${item.mitigation_strategies}</p>
+          </div>
+        </div>
+        `;
+
+          const detailsBtn = historyItem.querySelector('.view-details-btn');
+          const expandedDetails = historyItem.querySelector('.history-expanded-details');
+          detailsBtn.addEventListener('click', () => {
+            expandedDetails.classList.toggle("open");
+            detailsBtn.innerText = expandedDetails.classList.contains("open") ? "Hide Details" : "View Details";
+          });
+
+          historyList.appendChild(historyItem);
+          loadedList.push(item);
+        });
+
+        loadedItems += data.length;
+        currentPage++;
+
+        loadMoreBtn.style.display = loadedItems < totalItems ? 'block' : 'none';
+
+      } catch (err) {
+        console.error('Failed to load history:', err);
+        noHistoryMessage.style.display = 'block';
+        loadMoreBtn.style.display = 'none';
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadNextPage();
+    });
+
+    // Load more click
+    loadMoreBtn.addEventListener('click', () => {
+      loadNextPage();
+    });
+
+    // Fullscreen image viewer
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    window.openFullscreen = function (src) {
+      modalImg.src = src;
+      modal.style.display = 'flex';
+    };
+    modal.addEventListener('click', () => {
+      modal.style.display = 'none';
+      modalImg.src = '';
+    });
+
+    // 🔁 Dynamic injection for new analysis
+    window.appendToHistory = function (entry) {
+      // Create the item DOM and inject to top
+      if (loadedList.some(item => item.id === entry.id)) {
+        return;
+      };
+      loadedList.pop();
+      loadedList.unshift(entry);
+      console.log("Appending to history:", loadedList);
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      historyItem.innerHTML = `
+      <div class="history-item-header">
+        <div class="history-details">
+          <strong>Date:</strong>
+          ${new Date(entry.created_at).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric',
+        minute: '2-digit', hour12: true
+      })}<br>
+          <strong>Disease:</strong> ${entry.disease_type}<br>
+          <strong>Confidence:</strong> ${entry.confidence_score}%
+        </div>
+        <button class="btn view-details-btn">View Details</button>
+      </div>
+      <div class="history-expanded-details">
+        <img src="${entry.annotated_image_url}" onclick="openFullscreen('${entry.annotated_image_url}')" style="cursor: pointer; max-height:200px; border:1px solid #888; margin-bottom:10px;">
+        <div class="history-item-content">
+          <p><strong>Description:</strong> ${entry.description}</p>
+          <p><strong>Prescription:</strong> ${entry.prescription}</p>
+          <p><strong>Mitigation:</strong> ${entry.mitigation_strategies}</p>
+        </div>
+      </div>
+    `;
+
+      const detailsBtn = historyItem.querySelector('.view-details-btn');
+      const expandedDetails = historyItem.querySelector('.history-expanded-details');
+      detailsBtn.addEventListener('click', () => {
+        expandedDetails.classList.toggle("open");
+        detailsBtn.innerText = expandedDetails.classList.contains("open") ? "Hide Details" : "View Details";
+      });
+
+      historyList.insertBefore(historyItem, historyList.firstChild);
+      historyList.removeChild(historyList.lastChild);
+      totalItems++;
+      loadMoreBtn.style.display = loadedItems < totalItems ? 'block' : 'none';
+    };
+  </script>
+	  
+	  <script src="./script.js" defer></script>
+
+    
+<!--
+<script>
+(function () {
+  function byId(id) { return document.getElementById(id); }
+
+  var container = document.querySelector('.image-preview-container');
+  if (!container) return;
+
+  var PI_IP = container.getAttribute('data-pi-ip') || '10.0.0.103';
+  var STREAM_URL = 'http://' + PI_IP + ':3001/video';
+  var SNAP_URL   = 'http://' + PI_IP + ':3001/snapshot.jpg';
+
+  var uploadBtn  = byId('uploadBtn');       // may exist
+  var startBtn   = byId('startCameraBtn');  // may exist
+  var captureBtn = byId('captureBtn');
+  var analyzeBtn = byId('analyzeImageBtn');
+  var videoPrev  = byId('videoPreview');    // keep hidden; we use PiCam
+  var imagePrev  = byId('imagePreview');
+  var spinner    = byId('loadingSpinner');
+  var placeholder= byId('previewPlaceholder');
+
+  // Ensure we have an <img id="piStream"> right after #videoPreview
+  var streamImg = byId('piStream');
+  if (!streamImg) {
+    streamImg = document.createElement('img');
+    streamImg.id = 'piStream';
+    streamImg.alt = 'PiCam live';
+    streamImg.style.display = 'none';
+    streamImg.style.maxWidth = '100%';
+    streamImg.style.borderRadius = '8px';
+    if (videoPrev && videoPrev.parentNode) {
+      videoPrev.parentNode.insertBefore(streamImg, imagePrev || videoPrev.nextSibling);
+    } else {
+      // fallback: append to container
+      container.insertBefore(streamImg, imagePrev || null);
+    }
+  }
+
+  function setBusy(busy) {
+    if (spinner) spinner.style.display = busy ? 'flex' : 'none';
+    if (placeholder) {
+      var anyShown = (streamImg.style.display !== 'none') || (imagePrev && imagePrev.style.display !== 'none');
+      placeholder.style.display = busy ? 'none' : (anyShown ? 'none' : 'block');
+    }
+  }
+
+  function startLive() {
+    setBusy(true);
+    if (imagePrev) { imagePrev.style.display = 'none'; }
+    if (videoPrev) { videoPrev.style.display = 'none'; }
+
+    streamImg.onload = function () { setBusy(false); };
+    streamImg.onerror = function () {
+      setBusy(false);
+      if (placeholder) {
+        placeholder.textContent = 'Cannot reach Pi /video. Test it directly: ' + STREAM_URL;
+        placeholder.style.display = 'block';
+      }
+    };
+    streamImg.src = STREAM_URL + '?ts=' + Date.now();
+    streamImg.style.display = 'block';
+
+    if (captureBtn) captureBtn.style.display = 'inline-flex';
+    if (analyzeBtn) analyzeBtn.disabled = true;
+  }
+
+  function takePhoto() {
+    setBusy(true);
+    fetch(SNAP_URL + '?ts=' + Date.now(), { cache: 'no-store' })
+      .then(function (resp) {
+        if (!resp.ok) throw new Error('snapshot failed ' + resp.status);
+        return resp.blob();
+      })
+      .then(function (blob) {
+        if (imagePrev) {
+          imagePrev.src = URL.createObjectURL(blob);
+          imagePrev.style.display = 'block';
+        }
+        // hide live stream while viewing the still
+        streamImg.src = '';
+        streamImg.style.display = 'none';
+
+        if (analyzeBtn) analyzeBtn.disabled = false;
+        setBusy(false);
+      })
+      .catch(function (err) {
+        console.error(err);
+        if (placeholder) {
+          placeholder.textContent = 'Snapshot failed. Try opening: ' + SNAP_URL;
+          placeholder.style.display = 'block';
+        }
+        setBusy(false);
+      });
+  }
+
+  // Wire whichever start button exists
+  if (uploadBtn)  uploadBtn.addEventListener('click', function (e) { e.preventDefault(); startLive(); });
+  if (startBtn)   startBtn.addEventListener('click',  function (e) { e.preventDefault(); startLive(); });
+  if (captureBtn) captureBtn.addEventListener('click',function (e) { e.preventDefault(); takePhoto(); });
+})();
+</script>
+
+<script>
+(function () {
+  // 1) Hard-disable laptop webcam on this page
+  try {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      var _origGUM = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      navigator.mediaDevices.getUserMedia = function (constraints) {
+        if (constraints && (constraints.video || (constraints.mediaSource === 'camera'))) {
+          console.warn('Blocked getUserMedia(video); using PiCam instead.');
+          return Promise.reject(new Error('Laptop webcam disabled: using PiCam stream instead.'));
+        }
+        return _origGUM(constraints);
+      };
+    }
+  } catch (e) { console.warn('GUM override failed', e); }
+
+  // 2) Stop any already-open local webcam tracks and hide <video> elements
+  function stopAllLocalCams() {
+    var vids = document.querySelectorAll('video');
+    vids.forEach(function (v) {
+      try {
+        if (v.srcObject && v.srcObject.getTracks) {
+          v.srcObject.getTracks().forEach(function (t) { try { t.stop(); } catch (_e) {} });
+        }
+      } catch (_e) {}
+      v.srcObject = null;
+      v.style.display = 'none';
+    });
+  }
+  stopAllLocalCams();
+
+  // 3) Scrub existing event listeners on buttons by cloning them
+  function scrub(id) {
+    var el = document.getElementById(id);
+    if (!el || !el.parentNode) return null;
+    var clone = el.cloneNode(true);
+    el.parentNode.replaceChild(clone, el);
+    return clone;
+  }
+  var uploadBtn  = scrub('uploadBtn') || scrub('startCameraBtn');
+  var captureBtn = scrub('captureBtn');
+
+  var container   = document.querySelector('.image-preview-container');
+  if (!container) return;
+
+  var PI_IP      = container.getAttribute('data-pi-ip') || '10.0.0.103';
+  var STREAM_URL = 'http://' + PI_IP + ':3001/video';
+  var SNAP_URL   = 'http://' + PI_IP + ':3001/snapshot.jpg';
+
+  var streamImg   = document.getElementById('piStream');
+  var imagePrev   = document.getElementById('imagePreview');
+  var spinner     = document.getElementById('loadingSpinner');
+  var placeholder = document.getElementById('previewPlaceholder');
+  var analyzeBtn  = document.getElementById('analyzeImageBtn');
+  var videoPrev   = document.getElementById('videoPreview');
+  if (videoPrev) videoPrev.style.display = 'none';
+
+  if (!streamImg) {
+    streamImg = document.createElement('img');
+    streamImg.id = 'piStream';
+    streamImg.alt = 'PiCam live';
+    streamImg.style.display = 'none';
+    streamImg.style.maxWidth = '100%';
+    streamImg.style.borderRadius = '8px';
+    container.insertBefore(streamImg, imagePrev || null);
+  }
+
+  function setBusy(b) {
+    if (spinner) spinner.style.display = b ? 'flex' : 'none';
+    if (placeholder) {
+      var anyShown = (streamImg.style.display !== 'none') || (imagePrev && imagePrev.style.display !== 'none');
+      placeholder.style.display = b ? 'none' : (anyShown ? 'none' : 'block');
+    }
+  }
+
+  function startLive() {
+    setBusy(true);
+    stopAllLocalCams();
+    if (imagePrev) imagePrev.style.display = 'none';
+
+    streamImg.onload = function () { setBusy(false); };
+    streamImg.onerror = function () {
+      setBusy(false);
+      if (placeholder) {
+        placeholder.textContent = 'Cannot reach Pi /video. Open: ' + STREAM_URL;
+        placeholder.style.display = 'block';
+      }
+    };
+    streamImg.src = STREAM_URL + '?ts=' + Date.now();
+    streamImg.style.display = 'block';
+
+    if (captureBtn) captureBtn.style.display = 'inline-flex';
+    if (analyzeBtn) analyzeBtn.disabled = true;
+  }
+
+  function takePhoto() {
+    setBusy(true);
+    fetch(SNAP_URL + '?ts=' + Date.now(), { cache: 'no-store' })
+      .then(function (resp) { if (!resp.ok) throw new Error('snapshot ' + resp.status); return resp.blob(); })
+      .then(function (blob) {
+        if (imagePrev) {
+          imagePrev.src = URL.createObjectURL(blob);
+          imagePrev.style.display = 'block';
+        }
+        streamImg.src = '';
+        streamImg.style.display = 'none';
+        if (analyzeBtn) analyzeBtn.disabled = false;
+      })
+      .catch(function (e) {
+        console.error(e);
+        if (placeholder) { placeholder.textContent = 'Snapshot failed. Try ' + SNAP_URL; placeholder.style.display = 'block'; }
+      })
+      .finally(function () { setBusy(false); });
+  }
+
+  if (uploadBtn)  uploadBtn.addEventListener('click', function (e) { e.preventDefault(); startLive(); });
+  if (captureBtn) captureBtn.addEventListener('click', function (e) { e.preventDefault(); takePhoto(); });
+})();
+</script>
+-->
 </body>
 
 </html>

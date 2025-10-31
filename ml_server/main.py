@@ -5,29 +5,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, ImageDraw
 from ultralytics import YOLO
 
-# --- ADDED: limit threads for small instances (Render Free/Starter) ---
+# --- Limit threads for small instances ---
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
 try:
-    import torch  # ultralytics uses torch; keep optional guard
+    import torch  # ultralytics uses torch
     try:
         torch.set_num_threads(1)
     except Exception:
         pass
 except Exception:
     torch = None
-# ----------------------------------------------------------------------
+# -----------------------------------------
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], allow_credentials=True
+    allow_origins=["*"],  # pwede mong higpitan kung gusto mo
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
 )
 
 MODEL_PATH = os.getenv("MODEL_PATH", "best.pt")
 model = YOLO(MODEL_PATH)
 
-# --- ADDED: warm up model on startup to avoid first-request lag/hangs ---
+# --- Warm up model on startup (faster first request) ---
 @app.on_event("startup")
 def _warmup():
     try:
@@ -40,7 +43,7 @@ def _warmup():
         print("[startup] warmup done")
     except Exception as e:
         print("[startup] warmup failed:", e)
-# -----------------------------------------------------------------------
+# -------------------------------------------------------
 
 @app.get("/health")
 def health():
@@ -50,13 +53,26 @@ def health():
 async def detect(
     image: UploadFile = File(...),
     conf: float = 0.25,
-    imgsz: int = 640,
+    imgsz: int = 320,          # CHANGED: default 320 (mas mabilis)
     return_image: bool = True
 ):
+    # sanitize inputs
+    try:
+        imgsz = int(imgsz)
+    except Exception:
+        imgsz = 320
+    imgsz = max(160, min(imgsz, 640))   # CHANGED: clamp 160..640
+
+    try:
+        conf = float(conf)
+    except Exception:
+        conf = 0.25
+    conf = max(0.05, min(conf, 0.9))    # safety clamp
+
     raw = await image.read()
     img = Image.open(io.BytesIO(raw)).convert("RGB")
 
-    # ADDED: no_grad for faster/lower-mem inference
+    # faster/lower-mem inference
     if torch is not None:
         with torch.no_grad():
             r = model.predict(img, conf=conf, imgsz=imgsz)[0]
@@ -92,3 +108,8 @@ async def detect(
         payload["image_base64"] = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
     return payload
+
+# Optional: local run fallback (hindi ginagamit sa Render pero safe)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", "8080")))

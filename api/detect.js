@@ -1,80 +1,34 @@
-// api/detect.js  — Axios-based proxy (fixes multipart boundary issue)
-const { IncomingForm } = require("formidable");
-const fs = require("fs");
-const FormData = require("form-data");
-const axios = require("axios");
+// api/detect.js — 307 redirect to the ML server (keeps POST + multipart body)
 
-module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
+module.exports = (req, res) => {
+  // (optional) allow OPTIONS so forms/fetch preflight won't complain
+  if (req.method === "OPTIONS") {
+    res.statusCode = 204;
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    return res.end();
   }
 
-  const form = new IncomingForm({
-    keepExtensions: true,
-    uploadDir: "/tmp",
-    maxFileSize: 25 * 1024 * 1024, // 25MB
-    multiples: true,
-  });
+  if (req.method !== "POST") {
+    res.statusCode = 405;
+    res.setHeader("Content-Type", "application/json");
+    return res.end(JSON.stringify({ error: "Only POST allowed" }));
+  }
 
-  form.parse(req, async (err, fields, files) => {
-    try {
-      if (err) {
-        console.error("[detect] parse error:", err);
-        return res.status(400).json({ error: "Bad multipart" });
-      }
+  const base = (process.env.ML_SERVER_URL || "https://visually-impaired.onrender.com").replace(/\/+$/, "");
 
-      // robust picker (accepts arrays / any key)
-      const pickFirstFile = (obj) => {
-        if (!obj) return null;
-        const preferred = ["image", "file", "photo", "picture", "img", "upload"];
-        for (const k of preferred) {
-          const v = obj[k];
-          if (!v) continue;
-          if (Array.isArray(v)) return v[0];
-          return v;
-        }
-        for (const v of Object.values(obj)) {
-          if (Array.isArray(v)) return v[0];
-          if (v) return v;
-        }
-        return null;
-      };
+  // keep any incoming query string (e.g., from your UI), then set fast defaults
+  const qidx = req.url.indexOf("?");
+  const search = new URLSearchParams(qidx >= 0 ? req.url.slice(qidx + 1) : "");
+  if (!search.has("imgsz")) search.set("imgsz", "320");      // faster default
+  if (!search.has("conf"))  search.set("conf", "0.25");
+  search.set("return_image", "true");
 
-      const f = pickFirstFile(files);
-      if (!f?.filepath) {
-        console.warn("[detect] no file. keys:", Object.keys(files || {}));
-        return res.status(400).json({ error: "No image file" });
-      }
+  const target = `${base}/api/detect?${search.toString()}`;
 
-      const fd = new FormData();
-      fd.append("image", fs.createReadStream(f.filepath), f.originalFilename || "upload.jpg");
-
-      const qs = new URLSearchParams({ return_image: "true" });
-      if (fields?.conf) qs.set("conf", String(fields.conf));
-      if (fields?.imgsz) qs.set("imgsz", String(fields.imgsz));
-
-      const base = process.env.ML_SERVER_URL || "https://visually-impaired.onrender.com";
-      const url = `${base}/api/detect?${qs.toString()}`;
-
-      // Axios handles streaming multipart perfectly; set size limits + timeout
-      const upstream = await axios.post(url, fd, {
-        headers: fd.getHeaders(),
-        timeout: 45000,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-        validateStatus: () => true, // we'll forward status as-is
-      });
-
-      return res.status(upstream.status).json(upstream.data);
-    } catch (e) {
-      console.error("[detect] proxy error:", e?.response?.status, e?.message);
-      return res.status(500).json({ error: "Failed to reach ML server" });
-    } finally {
-      // cleanup temp files
-      try {
-        const arr = files ? Object.values(files).flat() : [];
-        for (const it of arr) if (it?.filepath) fs.unlinkSync(it.filepath);
-      } catch {}
-    }
-  });
+  // 307 preserves method + body; browser will POST directly to Render
+  res.statusCode = 307;
+  res.setHeader("Location", target);
+  return res.end();
 };

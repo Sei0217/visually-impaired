@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Object Recognition and Navigation for Visually Impaired Person</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* optional: mas kita ang annotated image */
+    #imagePreview { max-width: 100%; border-radius: 8px; }
+    .results-area ul { margin-top: .5rem; padding-left: 1.2rem; }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+      <a style="color:#fff;text-decoration:none;" href="/index.html">
+        <h1 data-i18n="site_title">Object Recognition and Navigation</h1>
+      </a>
+
+      <nav>
+        <ul id="navMenu">
+          <li><a href="/index.html" data-i18n="nav_home">Home</a></li>
+          <li><a href="/information.html" data-i18n="nav_info">Object information</a></li>
+        </ul>
+
+        <!-- Language switcher -->
+        <div class="lang-wrap" aria-label="Language selector">
+          <i class="fas fa-globe" aria-hidden="true" style="color:#fff;"></i>
+          <label for="langSelect" data-i18n="label_language">Language</label>
+          <select id="langSelect" aria-label="Language">
+            <option value="en">English</option>
+            <option value="tl">Tagalog</option>
+            <option value="ceb">Cebuano</option>
+          </select>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="map-quick">
+      <h2><i class="fas fa-location-arrow"></i> Quick Google Maps (GPS → lat/lon)</h2>
+
+      <div class="actions">
+        <button id="btnOpenGMaps">Use my GPS & Open in Google Maps</button>
+        <button id="btnEmbedGMaps">Use my GPS & Embed Map Below</button>
+      </div>
+
+      <div class="status" id="gmStatus">Click a button to request permission and use your location.</div>
+      <p class="status">Lat/Lon: <span id="gmCoords">--</span></p>
+
+      <!-- Optional embed (no API key) -->
+      <iframe id="gmIframe" style="display:none;"
+              loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </section>
+  </main>
+
+  <script>
+  // Helper: status text
+  function setGmStatus(msg){ const el = document.getElementById('gmStatus'); if(el) el.textContent = msg || ''; }
+  function setGmCoords(lat, lon){ const el = document.getElementById('gmCoords'); if(el) el.textContent = (lat && lon) ? `${lat}, ${lon}` : '--'; }
+
+  // Optional: i-sync ang language sa dropdown mo (tl/en/ceb)
+  function mapsLangParam() {
+    const sel = document.getElementById('langSelect');
+    const v = (sel && sel.value) ? sel.value : 'en';
+    // Google Maps web supports 'en' and 'fil' (walang 'ceb'), so ceb -> en
+    if (v === 'tl') return 'fil';
+    return 'en';
+  }
+
+  // Gumamit ng device GPS (HTML5 Geolocation) — magpa-prompt ng permission
+  function getGPS() {
+    return new Promise((resolve, reject) => {
+      if (!('geolocation' in navigator)) {
+        return reject(new Error('Geolocation not supported by this browser.'));
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const lat = +pos.coords.latitude.toFixed(6);
+          const lon = +pos.coords.longitude.toFixed(6);
+          const acc = Math.round(pos.coords.accuracy || 0);
+          resolve({lat, lon, acc});
+        },
+        err => reject(err),
+        { enableHighAccuracy:true, timeout:10000, maximumAge:5000 }
+      );
+    });
+  }
+
+  // 3A) Open sa Google Maps (new tab) gamit lang ang lat/lon (no key)
+  async function openInGoogleMaps() {
+    try {
+      setGmStatus('Requesting location permission…');
+      const {lat, lon, acc} = await getGPS();
+      setGmCoords(lat, lon);
+      setGmStatus(`Location OK (±${acc} m). Opening Google Maps…`);
+      const hl = mapsLangParam();
+      // Official link style:
+      const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}&hl=${hl}`;
+      window.open(url, '_blank', 'noopener');
+    } catch (e) {
+      console.warn(e);
+      if (e && e.code === 1) setGmStatus('Permission denied by user.');
+      else if (e && e.code === 2) setGmStatus('Position unavailable.');
+      else if (e && e.code === 3) setGmStatus('Location request timed out.');
+      else setGmStatus('Unable to get your location.');
+    }
+  }
+
+  // 3B) I-embed ang Google Maps sa <iframe> (no key)
+  async function embedGoogleMaps() {
+    try {
+      setGmStatus('Requesting location permission…');
+      const {lat, lon, acc} = await getGPS();
+      setGmCoords(lat, lon);
+      setGmStatus(`Location OK (±${acc} m). Embedding map…`);
+      const hl = mapsLangParam();
+      // Older-but-still-working embed style (no key)
+      const src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
+      const iframe = document.getElementById('gmIframe');
+      iframe.src = src;
+      iframe.style.display = 'block';
+    } catch (e) {
+      console.warn(e);
+      const iframe = document.getElementById('gmIframe');
+      iframe.style.display = 'none';
+      if (e && e.code === 1) setGmStatus('Permission denied by user.');
+      else if (e && e.code === 2) setGmStatus('Position unavailable.');
+      else if (e && e.code === 3) setGmStatus('Location request timed out.');
+      else setGmStatus('Unable to get your location.');
+    }
+  }
+
+  // Bind buttons
+  document.getElementById('btnOpenGMaps')?.addEventListener('click', openInGoogleMaps);
+  document.getElementById('btnEmbedGMaps')?.addEventListener('click', embedGoogleMaps);
+
+  // Optional: kung nagpalit ng wika sa dropdown, i-refresh lang ang embed para magbago ang labels ng map UI
+  document.getElementById('langSelect')?.addEventListener('change', () => {
+    const iframe = document.getElementById('gmIframe');
+    if (!iframe || !iframe.src) return;
+    // re-embed with new lang
+    const [lat, lon] = (document.getElementById('gmCoords')?.textContent || '').split(',').map(s=>s?.trim());
+    if (lat && lon) {
+      const hl = mapsLangParam();
+      iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
+    }
+  });
+</script>
+
+</body>
+</html>

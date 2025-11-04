@@ -564,7 +564,7 @@ function speak(text, lang){
   u.lang = lang === 'tl' ? 'fil-PH' : lang === 'ceb' ? 'en-PH' : 'en-US'; // ceb fallback sa EN voice
   const v = pickVoiceFor(lang);
   if (v) u.voice = v;
-  u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
+  u.rate = 0.5; u.pitch = 1.0; u.volume = 1.0;
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }

@@ -375,6 +375,21 @@
         resultsBox.style.display = 'block';
         updateDetectionsList(currentAnalysis);
 
+        // --- TTS: announce result based on selected language ---
+try {
+  const dets = Array.isArray(currentAnalysis?.detections) ? currentAnalysis.detections : [];
+  if (dets.length > 0) {
+    announceDetections(dets);
+  } else {
+    // fallback kung object_type lang ang meron
+    const label = (diseaseTypeEl.textContent || currentAnalysis.object_type || 'object').trim();
+    announceDetections([{ label }]);
+  }
+} catch (e) {
+  console.warn('TTS error:', e);
+}
+
+
         // optional: history hook if present
         if (window.appendToHistory && (currentAnalysis?.detections?.length || 0) > 0) {
           window.appendToHistory(currentAnalysis);
@@ -399,10 +414,7 @@
     function openFullscreen(src) { modalImg.src = src; modal.style.display = 'flex'; }
     modal.addEventListener('click', () => { modal.style.display = 'none'; modalImg.src = ''; });
     window.openFullscreen = openFullscreen;
-  </script>
 
-
-  <script type="module">
   // ====== Simple I18N (English / Tagalog / Cebuano) ======
   const I18N = {
     en: {
@@ -527,8 +539,70 @@
   // Init on load
   setLang(currentLang());
   if (langSelect) langSelect.addEventListener('change', e => setLang(e.target.value));
-</script>
 
+  /* ====== TTS (Text-to-Speech) helpers ====== */
+const VOICE_CACHE = { list: [] };
+function loadVoicesOnce(){ VOICE_CACHE.list = speechSynthesis.getVoices(); }
+if (typeof speechSynthesis !== 'undefined') {
+  loadVoicesOnce();
+  speechSynthesis.onvoiceschanged = loadVoicesOnce;
+}
+function pickVoiceFor(langCode) {
+  const voices = VOICE_CACHE.list || [];
+  const desired = langCode === 'tl' ? ['fil-PH','tl-PH','fil','tl','en-PH','en-US']
+                : langCode === 'ceb' ? ['ceb-PH','fil-PH','tl-PH','en-PH','en-US']
+                : ['en-PH','en-US','en-GB'];
+  for (const d of desired) {
+    const v = voices.find(v => (v.lang || '').toLowerCase().startsWith(d.toLowerCase()));
+    if (v) return v;
+  }
+  return voices[0] || null;
+}
+function speak(text, lang){
+  if (!('speechSynthesis' in window) || !text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === 'tl' ? 'fil-PH' : lang === 'ceb' ? 'en-PH' : 'en-US'; // ceb fallback sa EN voice
+  const v = pickVoiceFor(lang);
+  if (v) u.voice = v;
+  u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+function cap(s){ return (s||'').toString().replace(/^./, c=>c.toUpperCase()); }
+
+// Optional dictionary para mas natural ang salita per language
+const SPOKEN_LABELS = {
+  tl: { person: 'tao', chair: 'silya', door: 'pinto', stairs: 'hagdan' },
+  ceb:{ person: 'tawo', chair: 'lingkoranan', door: 'pultahan', stairs: 'hagdanan' },
+  en: { person: 'person', chair: 'chair', door: 'door', stairs: 'stairs' }
+};
+function ttsPhrase(label, lang) {
+  const dict = SPOKEN_LABELS[lang] || SPOKEN_LABELS.en;
+  const key = (label||'').toLowerCase();
+  const say = dict[key] || label || 'object';
+  if (lang === 'tl') return key === 'person' ? 'Tao ang na-detect' : `${cap(say)} na-detect`;
+  if (lang === 'ceb')return key === 'person' ? 'Tawo na-detect'    : `${cap(say)} na-detect`;
+  return key === 'person' ? 'Person detected' : `${cap(say)} detected`;
+}
+function ttsNone(lang){
+  return lang === 'tl' ? 'Walang na-detect'
+       : lang === 'ceb' ? 'Walay na-detect'
+       : 'No object detected';
+}
+function getUILang(){
+  // Gagamitin ang currentLang() kung meron ka na sa i18n; fallback sa dropdown
+  if (typeof currentLang === 'function') return currentLang();
+  return document.getElementById('langSelect')?.value || 'en';
+}
+function announceDetections(dets){
+  const lang = getUILang();
+  if (!dets || !dets.length) { speak(ttsNone(lang), lang); return; }
+  const first = dets[0];
+  speak(ttsPhrase(first?.label || 'object', lang), lang);
+}
+
+
+</script>
   <!--
 <script>
 (function () {

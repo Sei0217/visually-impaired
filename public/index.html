@@ -10,55 +10,88 @@
     /* optional: mas kita ang annotated image */
     #imagePreview { max-width: 100%; border-radius: 8px; }
     .results-area ul { margin-top: .5rem; padding-left: 1.2rem; }
+
+    /* Language switcher (minimal) */
+    .lang-wrap { display:flex; align-items:center; gap:.5rem; margin-left:1rem; }
+    .lang-wrap label { color:#fff; font-size:.9rem; }
+    #langSelect {
+      appearance:none; background:#1f2937; color:#fff;
+      border:1px solid #374151; border-radius:8px;
+      padding:.35rem .75rem; font-size:.9rem; cursor:pointer;
+    }
+    header .container { display:flex; align-items:center; justify-content:space-between; }
+    header nav { display:flex; align-items:center; }
+    header nav ul#navMenu { display:flex; gap:1rem; align-items:center; }
+    @media (max-width: 640px) { .lang-wrap label { display:none; } }
+
   </style>
 </head>
 <body>
   <header>
     <div class="container">
       <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-      <a style="color:#fff;text-decoration:none;" href="/index.html"><h1>Object Recognition and Navigation</h1></a>
+      <a style="color:#fff;text-decoration:none;" href="/index.html">
+        <h1 data-i18n="site_title">Object Recognition and Navigation</h1>
+      </a>
+
       <nav>
         <ul id="navMenu">
-          <li><a href="/index.html">Home</a></li>
-          <li><a href="/information.html">Object information</a></li>
+          <li><a href="/index.html" data-i18n="nav_home">Home</a></li>
+          <li><a href="/information.html" data-i18n="nav_info">Object information</a></li>
         </ul>
+
+        <!-- Language switcher -->
+        <div class="lang-wrap" aria-label="Language selector">
+          <i class="fas fa-globe" aria-hidden="true" style="color:#fff;"></i>
+          <label for="langSelect" data-i18n="label_language">Language</label>
+          <select id="langSelect" aria-label="Language">
+            <option value="en">English</option>
+            <option value="tl">Tagalog</option>
+            <option value="ceb">Cebuano</option>
+          </select>
+        </div>
       </nav>
     </div>
   </header>
 
   <main style="padding-top:5vh" class="container">
     <section id="home" class="hero-section">
-      <h2>Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm</h2>
-      <p>Integrating deep-learning object detection to deliver guidance and obstacle alerts.</p>
+      <h2 data-i18n="hero_h2">Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm</h2>
+      <p data-i18n="hero_p">Integrating deep-learning object detection to deliver guidance and obstacle alerts.</p>
+
 
       <div class="feature-grid">
         <div class="feature-card" data-target="detect" data-action="capture">
           <i class="fas fa-camera"></i>
-          <h3>Capture Image</h3>
-          <p>Use your device camera to capture an object.</p>
+          <h3 data-i18n="feature_capture_h3">Capture Image</h3>
+          <p data-i18n="feature_capture_p">Use your device camera to capture an object.</p>
         </div>
         <div class="feature-card" data-target="detect" data-action="upload">
           <i class="fas fa-upload"></i>
-          <h3>Upload Image</h3>
-          <p>Upload an image from your gallery for analysis.</p>
+          <h3 data-i18n="feature_upload_h3">Upload Image</h3>
+          <p data-i18n="feature_upload_p">Upload an image from your gallery for analysis.</p>
         </div>
         <div class="feature-card" data-target="information">
           <i class="fas fa-lightbulb"></i>
-          <h3>Object information</h3>
-          <p>Learn more about object recognition and navigation.</p>
+          <h3 data-i18n="feature_info_h3">Object information</h3>
+          <p data-i18n="feature_info_p">Learn more about object recognition and navigation.</p>
         </div>
       </div>
     </section>
 
     <section id="detect" class="detection-section">
-      <h2>Detect Object</h2>
+      <h2 data-i18n="detect_h2">Detect Object</h2>
       <div class="upload-area">
-        <p>Select or capture an image of an object for analysis:</p>
+        <p data-i18n="detect_p">Select or capture an image of an object for analysis:</p>
 
         <!-- Important: Huwag gawing form para walang implicit submit -->
         <input type="file" id="imageInput" name="image" accept="image/*">
-        <button id="startCameraBtn" class="btn primary-btn"><i class="fas fa-camera"></i> Use Camera</button>
-        <button id="uploadBtn" class="btn primary-btn"><i class="fas fa-upload"></i> Upload Image</button>
+        <button id="startCameraBtn" class="btn primary-btn">
+          <i class="fas fa-camera"></i> <span data-i18n="btn_use_camera">Use Camera</span>
+        </button>
+        <button id="uploadBtn" class="btn primary-btn">
+          <i class="fas fa-upload"></i> <span data-i18n="btn_upload_image">Upload Image</span>
+        </button>
 
         <div class="image-preview-container" data-pi-ip="10.0.0.103">
           <div id="loadingSpinner" class="spinner-container" style="display:none;">
@@ -71,25 +104,25 @@
                                   dur="2" values="360;324;288;252;216;180;144;108;72;36" repeatCount="indefinite"/>
               </circle>
             </svg>
-            <p>Analyzing...</p>
+            <p data-i18n="spinner_analyzing">Analyzing...</p>
           </div>
           <video id="videoPreview" autoplay playsinline style="display:none"></video>
           <img id="imagePreview" alt="Preview">
-          <p id="previewPlaceholder">No image selected</p>
+          <p id="previewPlaceholder" data-i18n="placeholder_none">No image selected</p>
           <button id="captureBtn" class="btn" style="display:none;">
             <i class="fas fa-circle" style="margin:0!important;"></i>
           </button>
         </div>
 
         <button id="analyzeImageBtn" class="btn success-btn" disabled>
-          <i class="fas fa-search"></i> Analyze Image
+          <i class="fas fa-search"></i> <span data-i18n="btn_analyze">Analyze Image</span>
         </button>
       </div>
 
       <div id="resultsSection" class="results-area" style="display:none;">
-        <h3>Analysis Results</h3>
-        <div class="result-item"><strong>Object Type:</strong> <span id="diseaseType"></span></div>
-        <div class="result-item"><strong>Confidence Score:</strong> <span id="confidenceScore"></span></div>
+        <h3 data-i18n="results_h3">Analysis Results</h3>
+        <div class="result-item"><strong data-i18n="result_object_type">Object Type:</strong> <span id="diseaseType"></span></div>
+        <div class="result-item"><strong data-i18n="result_confidence">Confidence Score:</strong> <span id="confidenceScore"></span></div>
       </div>
     </section>
   </main>
@@ -366,6 +399,133 @@
     modal.addEventListener('click', () => { modal.style.display = 'none'; modalImg.src = ''; });
     window.openFullscreen = openFullscreen;
   </script>
+
+
+  <script type="module">
+  // ====== Simple I18N (English / Tagalog / Cebuano) ======
+  const I18N = {
+    en: {
+      meta_title: "Home | Object Recognition and Navigation for Visually Impaired Person",
+      site_title: "Object Recognition and Navigation",
+      nav_home: "Home",
+      nav_info: "Object information",
+      label_language: "Language",
+
+      hero_h2: "Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm",
+      hero_p: "Integrating deep-learning object detection to deliver guidance and obstacle alerts.",
+
+      feature_capture_h3: "Capture Image",
+      feature_capture_p: "Use your device camera to capture an object.",
+      feature_upload_h3: "Upload Image",
+      feature_upload_p: "Upload an image from your gallery for analysis.",
+      feature_info_h3: "Object information",
+      feature_info_p: "Learn more about object recognition and navigation.",
+
+      detect_h2: "Detect Object",
+      detect_p: "Select or capture an image of an object for analysis:",
+      btn_use_camera: "Use Camera",
+      btn_upload_image: "Upload Image",
+      btn_analyze: "Analyze Image",
+      placeholder_none: "No image selected",
+      spinner_analyzing: "Analyzing...",
+
+      results_h3: "Analysis Results",
+      result_object_type: "Object Type:",
+      result_confidence: "Confidence Score:",
+    },
+
+    tl: {
+      meta_title: "Home | Object Recognition at Navigation para sa Taong may Kapansanan sa Paningin",
+      site_title: "Object Recognition at Navigation",
+      nav_home: "Home",
+      nav_info: "Impormasyon ng Bagay",
+      label_language: "Wika",
+
+      hero_h2: "Pagpapahusay ng Object Recognition at Navigation para sa Taong may Kapansanan sa Paningin gamit ang Deep Learning",
+      hero_p: "Pinagsasama ang object detection para magbigay ng gabay at babala sa mga hadlang.",
+
+      feature_capture_h3: "Kunan ng Larawan",
+      feature_capture_p: "Gamitin ang camera ng device para kumuha ng bagay.",
+      feature_upload_h3: "Mag-upload ng Larawan",
+      feature_upload_p: "Mag-upload mula sa gallery para ma-analyze.",
+      feature_info_h3: "Impormasyon ng Bagay",
+      feature_info_p: "Alamin pa tungkol sa object recognition at navigation.",
+
+      detect_h2: "Mag-detect ng Bagay",
+      detect_p: "Pumili o kumuha ng larawan para sa pag-aanalisa:",
+      btn_use_camera: "Gamitin ang Camera",
+      btn_upload_image: "Mag-upload ng Larawan",
+      btn_analyze: "I-Analyze ang Larawan",
+      placeholder_none: "Walang napiling larawan",
+      spinner_analyzing: "Nag-aanalisa...",
+
+      results_h3: "Mga Resulta ng Pagsusuri",
+      result_object_type: "Uri ng Bagay:",
+      result_confidence: "Puntos ng Kumpiyansa:",
+    },
+
+    ceb: {
+      meta_title: "Home | Pag-ila ug Pag-navigate alang sa Adunay Kapansanan sa Panan-aw",
+      site_title: "Pag-ila ug Pag-navigate",
+      nav_home: "Balay",
+      nav_info: "Impormasyon sa Butang",
+      label_language: "Pinulongan",
+
+      hero_h2: "Pagpaayo sa Pag-ila ug Pag-navigate alang sa tawo nga adunay kapansanan sa panan-aw gamit ang Deep Learning",
+      hero_p: "Naghiusa sa object detection aron maghatag og giya ug pahimangno sa mga babag.",
+
+      feature_capture_h3: "Kuhaa ang Larawan",
+      feature_capture_p: "Gamita ang camera sa imong device aron mokuhag hulagway sa butang.",
+      feature_upload_h3: "I-upload ang Larawan",
+      feature_upload_p: "I-upload gikan sa gallery para sa analisa.",
+      feature_info_h3: "Impormasyon sa Butang",
+      feature_info_p: "Ilaila pa ang object recognition ug navigation.",
+
+      detect_h2: "Pag-detect sa Butang",
+      detect_p: "Pili o kuhaa ang hulagway para sa analisa:",
+      btn_use_camera: "Gamita ang Camera",
+      btn_upload_image: "I-upload ang Larawan",
+      btn_analyze: "I-Analisa ang Larawan",
+      placeholder_none: "Walay napiling hulagway",
+      spinner_analyzing: "Nag-analisa...",
+
+      results_h3: "Mga Resulta sa Analisa",
+      result_object_type: "Klase sa Butang:",
+      result_confidence: "Porsiyento sa Kumpiyansa:",
+    }
+  };
+
+  const langSelect = document.getElementById('langSelect');
+
+  function detectDefaultLang() {
+    const nav = (navigator.language || 'en').toLowerCase();
+    if (nav.startsWith('fil') || nav.startsWith('tl')) return 'tl';
+    if (nav.startsWith('ceb') || nav.startsWith('cb')) return 'ceb';
+    return 'en';
+  }
+  function currentLang() { return localStorage.getItem('app.lang') || detectDefaultLang(); }
+  function t(key, lang) {
+    const L = lang || currentLang();
+    return (I18N[L] && I18N[L][key]) || (I18N.en[key] || key);
+  }
+  function applyI18N(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) el.textContent = t(key, lang);
+    });
+    document.title = t('meta_title', lang);
+  }
+  function setLang(lang) {
+    if (!I18N[lang]) lang = 'en';
+    localStorage.setItem('app.lang', lang);
+    if (langSelect) langSelect.value = lang;
+    applyI18N(lang);
+  }
+
+  // Init on load
+  setLang(currentLang());
+  if (langSelect) langSelect.addEventListener('change', e => setLang(e.target.value));
+</script>
 
   <!--
 <script>

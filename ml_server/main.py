@@ -137,9 +137,22 @@ async def detect(
                 top_label = dets[top_idx]["label"]
                 top_conf  = dets[top_idx]["confidence"]
 
-        # annotated image via Ultralytics plot() (clean labels like localhost)
-        annotated = r.plot()  # BGR
-        ok, buf = cv2.imencode(".jpg", annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+# --- Faster annotate via pure OpenCV ---
+        annotated = img.copy()
+        if dets:
+            for d in dets:
+                x1, y1, x2, y2 = map(int, d["bbox"])
+                cv2.rectangle(annotated, (x1, y1), (x2, y2), (36, 255, 12), 2)
+                label = f'{d["label"]} {int(d["confidence"]*100)}%'
+                # background for text
+                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
+                cv2.rectangle(annotated, (x1, y1 - th - 6), (x1 + tw + 6, y1), (36, 255, 12), -1)
+                cv2.putText(annotated, label, (x1 + 3, y1 - 4),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2, cv2.LINE_AA)
+
+        # mas mababang JPEG quality para mas maliit ang payload pabalik
+        ok, buf = cv2.imencode(".jpg", annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 82])
+
         if not ok:
             return {"success": False, "error": "encode_failed"}
         b64 = base64.b64encode(buf.tobytes()).decode("utf-8")

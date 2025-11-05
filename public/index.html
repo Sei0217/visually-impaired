@@ -409,10 +409,11 @@ try {
 
 (function(){
   // ====== CONFIG: set this to your ML server base ======
-  const TTS_API_BASE = (window.API_BASE || window.API || '').replace(/\/$/,'') || 'https://visually-impaired.onrender.com';
-  // e.g., const TTS_API_BASE = 'https://your-ml.onrender.com';
+  const TTS_API_BASE =
+    (window.API_BASE || window.API || '').replace(/\/$/,'')
+    || 'https://visually-impaired.onrender.com';  // <-- change if needed
 
-  // ---------- VOICE HELPERS ----------
+  // ---------- VOICE PHRASE HELPERS ----------
   const SPOKEN_LABELS = {
     tl:  { person:'tao', chair:'silya', door:'pinto', stairs:'hagdan' },
     ceb: { person:'tawo', chair:'lingkoranan', door:'pultahan', stairs:'hagdanan' },
@@ -421,7 +422,8 @@ try {
   const cap = s => (s||'').toString().replace(/^./, c=>c.toUpperCase());
   function ttsPhrase(label, lang){
     const dict = SPOKEN_LABELS[lang] || SPOKEN_LABELS.en;
-    const key = (label||'').toLowerCase(); const say = dict[key] || label || 'object';
+    const key  = (label||'').toLowerCase();
+    const say  = dict[key] || label || 'object';
     if (lang==='tl')  return key==='person' ? 'Tao ang na-detect' : `${cap(say)} na-detect`;
     if (lang==='ceb') return key==='person' ? 'Tawo na-detect'    : `${cap(say)} na-detect`;
     return key==='person' ? 'Person detected' : `${cap(say)} detected`;
@@ -436,8 +438,8 @@ try {
     return document.getElementById('langSelect')?.value || 'en';
   }
 
-  // ---------- WEB SPEECH (if available) ----------
-  let hasWebSpeech = !!window.speechSynthesis;
+  // ---------- OPTIONAL WEB SPEECH (fallback only) ----------
+  const hasWebSpeech = !!window.speechSynthesis;
   let unlocked = false, voices = [];
   function refreshVoices(){ try{ voices = speechSynthesis.getVoices()||[]; }catch{} }
   if (hasWebSpeech){
@@ -460,7 +462,6 @@ try {
     }
     return voices[0] || null;
   }
-
   async function speakWebSpeech(text, lang){
     unlockWebSpeech();
     const u = new SpeechSynthesisUtterance(text);
@@ -472,78 +473,43 @@ try {
     setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch{} },30);
   }
 
-  // ---------- SERVER TTS FALLBACK (FastAPI /tts) ----------
+  // ---------- SERVER TTS (gTTS via FastAPI /tts) ----------
+  let ttsAudio = null;
   async function speakServer(text, lang){
-    if (!TTS_API_BASE){ console.warn('TTS_API_BASE not set'); return; }
+    if (!TTS_API_BASE) return;
+    if (!ttsAudio){
+      ttsAudio = new Audio();
+      ttsAudio.preload = 'none';
+    }
     const url = `${TTS_API_BASE}/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang||'en')}`;
-    const audio = new Audio(url);
-    // iOS/Android may require gesture; but detection flows usually start from a user tap.
-    try { await audio.play(); } catch(e){ console.warn('Audio play blocked:', e); }
+    ttsAudio.src = url;
+    try { await ttsAudio.play(); } catch(e){ console.warn('Audio play blocked or failed:', e); throw e; }
   }
 
-  // ---------- PUBLIC API ----------
+  // ---------- PUBLIC API (server-first) ----------
   window.speak = async function(text, lang){
     lang = lang || getUILang();
     if (!text) return;
-    if (hasWebSpeech) return speakWebSpeech(text, lang);
-    // fallback if no Web Speech
-    showToast('❌ Web Speech not supported'); // small toast like in your screenshot
-    return speakServer(text, lang);
+    try {
+      // Always prefer server TTS for a consistent (female) voice
+      return await speakServer(text, lang);
+    } catch(e){
+      // If server fails, fallback to Web Speech (when available)
+      if (hasWebSpeech) return speakWebSpeech(text, lang);
+    }
   };
+
   window.announceDetections = function(dets){
     const lang = getUILang();
     if (!dets || !dets.length) return window.speak(ttsNone(lang), lang);
     const first = dets[0];
     return window.speak(ttsPhrase(first?.label || 'object', lang), lang);
   };
+
   window.getUILang = getUILang;
 
-  // ---------- TEMP TEST BUTTON (mobile-only) ----------
-  window.addEventListener('DOMContentLoaded', ()=>{
-    const isMobile = window.matchMedia && matchMedia('(max-width: 768px)').matches;
-    if (!isMobile) return;
-
-    const btn = document.createElement('button');
-    btn.id = 'voiceTestBtn';
-    btn.type = 'button';
-    btn.textContent = '🔊 Test Voice';
-    Object.assign(btn.style,{
-      position:'fixed', right:'12px', bottom:'12px', zIndex:'99999',
-      padding:'10px 14px', border:'0', borderRadius:'999px',
-      background:'#111827', color:'#fff', fontSize:'14px', lineHeight:'1',
-      boxShadow:'none', cursor:'pointer'
-    });
-    document.body.appendChild(btn);
-
-    btn.addEventListener('click', async ()=>{
-      const lang = getUILang();
-      const phrase = lang==='tl' ? 'Test: gumagana ang boses.'
-                   : lang==='ceb' ? 'Test: ga tingog ang boses.'
-                   : 'Test: voice is ready.';
-      btn.textContent = '🔊 Speaking…';
-      await window.speak(phrase, lang);
-      // kung tumunog, alisin yung button after 1s
-      setTimeout(()=>{ try{ btn.remove(); }catch{} }, 1000);
-    });
-  });
-
-  // ---------- tiny toast ----------
-  function showToast(msg){
-    let t = document.getElementById('toast');
-    if (!t){
-      t = document.createElement('div'); t.id='toast';
-      Object.assign(t.style,{
-        position:'fixed', left:'50%', bottom:'18px', transform:'translateX(-50%)',
-        background:'#111827', color:'#fff', padding:'10px 14px', borderRadius:'999px',
-        zIndex:'99999', fontSize:'14px'
-      });
-      document.body.appendChild(t);
-    }
-    t.textContent = msg;
-    t.style.opacity = '1';
-    setTimeout(()=>{ t.style.opacity='0'; }, 1600);
-  }
 })();
+
 
 
 

@@ -346,46 +346,7 @@ function stopCamera() {
 
 }
   // --- SUPER FAST RESIZE/COMPRESS bago upload ---
-const MAX_SIDE = 960; // adjust mo kung gusto mo (640/768/960)
 
-async function prepareImageBlob(inputFile, maxSide = MAX_SIDE) {
-  // decode → downscale → re-encode JPEG
-  const srcBlob = inputFile instanceof Blob ? inputFile : new Blob([inputFile]);
-
-  // mabilis na decoder
-  let bmp;
-  try { bmp = await createImageBitmap(srcBlob); }
-  catch {
-    const img = new Image();
-    img.src = URL.createObjectURL(srcBlob);
-    await img.decode();
-    bmp = img;
-  }
-
-  const w = bmp.width, h = bmp.height;
-  const scale = Math.min(1, maxSide / Math.max(w, h));
-  // maliit na + <800KB? huwag nang i-reencode
-  if (scale === 1 && srcBlob.size <= 800_000) return new File([srcBlob], 'image.jpg', { type:'image/jpeg' });
-
-  const outW = Math.round(w * scale), outH = Math.round(h * scale);
-  const useOff = typeof OffscreenCanvas !== 'undefined';
-  const cvs = useOff ? new OffscreenCanvas(outW, outH)
-                     : Object.assign(document.createElement('canvas'), { width: outW, height: outH });
-  const ctx = cvs.getContext('2d', { alpha:false, desynchronized:true });
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(bmp, 0, 0, outW, outH);
-
-  // dynamic quality: mas malaki → bahagyang babaan
-  const px = outW * outH;
-  let q = 0.82; if (px > 1.3e6) q = 0.78; if (px > 2.5e6) q = 0.72;
-
-  const outBlob = useOff
-    ? await cvs.convertToBlob({ type:'image/jpeg', quality:q })
-    : await new Promise(r => cvs.toBlob(r, 'image/jpeg', q));
-
-  return new File([outBlob], 'image.jpg', { type:'image/jpeg' });
-}
 
 
     /* --------- Analyze button: the ONLY path that can process() --------- */
@@ -408,13 +369,8 @@ async function prepareImageBlob(inputFile, maxSide = MAX_SIDE) {
         try {
           const fd = new FormData();
           // ↓↓↓ compress/resize muna bago append
-          const prepared = await prepareImageBlob(currentImageFile, MAX_SIDE);
-          fd.append('image', prepared, 'upload.jpg');
-          // optional: ipasa na rin ang imgsz/conf (maging explicit)
-          fd.append('imgsz', '320');   // match sa server cap mo
-          fd.append('conf',  '0.25');
-          const ok = await process(fd);
-
+          fd.append('image', currentImageFile, currentImageFile.name || 'upload.jpg'); 
+          const ok = await process(fd); 
           if (!ok) console.warn('Analyze failed.');
         } finally {
           if (sp) sp.style.display = 'none';

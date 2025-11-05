@@ -965,7 +965,7 @@ canvas {
   }
 
   /* CENTER the Language row */
-    .lang-wrap { display:flex; align-items:center; gap:.5rem; margin-left:1rem; }
+    .lang-wrap { display:flex; align-items:center;}
     .lang-wrap label { color:#fff; font-size:.9rem; }
     #langSelect {
       appearance:none; background:#1f2937; color:#fff;

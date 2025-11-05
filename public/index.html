@@ -29,7 +29,7 @@
 <body>
   <header>
     <div class="container">
-      
+      <button class="menu-toggle"><i class="fas fa-bars"></i></button>
       <a style="color:#fff;text-decoration:none;" href="/index.html">
         <h1 data-i18n="site_title">Object Recognition and Navigation</h1>
       </a>
@@ -663,20 +663,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-</script>
+document.addEventListener('DOMContentLoaded', function () {
+  var btn = document.querySelector('.menu-toggle');
+  var menu = document.querySelector('nav ul#navMenu');
+  if (!btn || !menu) return;
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const toggle = document.querySelector('.menu-toggle');
-  const nav = document.querySelector('nav ul#navMenu');
-  if (!toggle || !nav) return;
+  btn.addEventListener('click', function(){
+    menu.classList.toggle('show');             // open/close
+    document.body.classList.toggle('nav-open'); // optional lock scroll
+  });
 
-  toggle.addEventListener('click', () => {
-    nav.classList.toggle('show');                 // open/close
-    document.body.classList.toggle('nav-open');   // (optional) lock scroll
+  // optional: isara kapag may pinindot na link
+  menu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ 
+      menu.classList.remove('show'); 
+      document.body.classList.remove('nav-open');
+    });
   });
 });
+
+
 </script>
+
+
 
 
 

@@ -900,3 +900,21 @@ canvas {
 
 body.nav-open { overflow: hidden; }
 
+@media (max-width:768px){
+  /* kapag bukas ang menu, gawin nating wrap layout */
+  nav ul.show{
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+  }
+  /* gawing full row ang unang dalawang item (Home, Object Info) */
+  nav ul.show li:nth-child(-n+2){ flex-basis:100%; text-align:center; }
+  /* Location at Language magkakahilera (share row) */
+  nav ul.show li:nth-child(n+3){ flex-basis:auto; }
+  /* alisin yung divider at sobrang padding sa mobile menu items */
+  nav ul li a{ border-top: none !important; padding: .6rem .8rem; }
+
+  /* paliitin/itago ang "Language" label kung masikip */
+  .lang-wrap label{ display:none; }
+}
+

@@ -923,61 +923,110 @@ canvas {
 /* ===== MOBILE ≤768px: right-side drawer, smaller + no side-slide ===== */
 @media (max-width: 768px){
 
-  /* stop horizontal “slide” kahit sarado ang menu */
+  /* Stop horizontal "slide" on menu close */
   html, body { overflow-x: hidden; }
 
-  /* hamburger visible, on top */
-  .menu-toggle{ display:block !important; z-index:1100; }
+  /* Hamburger visible; ensure on top */
+  .menu-toggle { display:block !important; z-index:1100; }
 
-  /* backdrop */
+  /* Backdrop */
   .nav-backdrop{
-    display:none; position:fixed; inset:0;
-    background:rgba(0,0,0,.35); z-index:1000;
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    z-index:1000;
   }
-  .nav-backdrop.show{ display:block; }
+  .nav-backdrop.show { display:block; }
 
-  /* drawer (RIGHT) – default: hidden off screen */
-  nav ul{
-    display:flex !important; flex-direction:column; gap:10px;
+  /* Off-canvas drawer (RIGHT) – default: hidden off-screen */
+  nav ul {
+    display:flex !important;
+    flex-direction:column;
+    gap:10px;
 
-    position:fixed; top:0; left:-1px;   /* -1px to avoid “sliver” */
-    height:100vh; width:66%; max-width:280px;  /* ⬅️ mas maliit */
-    padding:64px 14px 20px;               /* mas compact top padding */
-    background:#746CF6; color:#fff;
+    position:fixed;
+    top:0;
+    left:-1px;   /* -1px to avoid sliver gap */
+    height:100vh;
+    width:60%;    /* Smaller width */
+    max-width:280px;
+    padding:64px 14px 20px;  /* Compact top padding */
 
-    transform:translateX(100%);           /* nakatago sa kanan */
+    background:#746CF6;
+    color:#fff;
+
+    transform:translateX(100%); /* Hidden by default */
     transition:transform .25s ease-out;
     z-index:1005;
 
-    /* shadow only when open (para walang kita habang sarado) */
     box-shadow:none;
     border-top-left-radius:16px;
     border-bottom-left-radius:16px;
     -webkit-overflow-scrolling:touch;
   }
-  nav ul.show{
+  nav ul.show {
     transform:translateX(0);
-    box-shadow:-12px 0 24px rgba(0,0,0,.18);
+    box-shadow:-12px 0 24px rgba(0,0,0,.18); /* Only show shadow when open */
   }
 
-  /* lock page scroll habang bukas ang menu */
-  /* menu item look */
-  nav ul li a{
+  /* Lock page scroll when sidebar is open */
+  body.nav-open {
+    position:fixed;
+    width:100%;
+    height:100vh;
+    overflow:hidden;
+  }
+
+  /* Menu item look inside the sidebar */
+  nav ul li a {
     border-top:none !important;
     padding:.6rem .75rem;
   }
 
-  /* language row centered sa drawer */
-  .lang-wrap{
-    margin-top:6px; width:100%;
-    display:flex; align-items:center; justify-content:center; gap:8px;
+  /* Language row centered inside the drawer */
+  .lang-wrap {
+    margin-top:6px;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
   }
-    .lang-wrap label { color:#fff; font-size:.9rem; }
-    #langSelect {
-        appearance:none; background:#1f2937; color:#fff;
-        border:1px solid #374151; border-radius:8px;
-        padding:.35rem .75rem; font-size:.9rem; cursor:pointer;
-    }
+
+  .lang-wrap label { display:none; } /* Optional: Hide label for mobile */
+  #langSelect {
+    appearance:none;
+    background:#1f2937;
+    color:#fff;
+    border:1px solid #374151;
+    border-radius:8px;
+    padding:.35rem .75rem;
+    font-size:.9rem;
+    cursor:pointer;
+    text-align-last:center; /* Center option text */
+    min-width:120px;
+  }
+}
+
+/* ==========================
+   STICKY NAVBAR (for mobile and desktop)
+   ========================== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  background-color: var(--brand);
+}
+
+/* ==========================
+   SCROLL FIXES (for Sidebar) 
+   ========================== */
+@media (max-width: 768px){
+  /* Ensure sidebar content is scrollable */
+  nav ul {
+    overflow-y:auto;
+  }
 }
 
 

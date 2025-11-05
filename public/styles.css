@@ -927,6 +927,9 @@ canvas {
 /* ==========================
    MOBILE VIEW: Right-to-left drawer + reduced bottom padding
    ========================== */
+/* ==========================
+   MOBILE VIEW: Right-to-left drawer without box-shadow and scroll lock
+   ========================== */
 @media (max-width: 768px){
 
   /* stop horizontal “slide” when menu is closed */
@@ -965,7 +968,6 @@ canvas {
     transition:transform .25s ease-out;
     z-index:1005;
 
-    box-shadow:none;
     border-top-left-radius:16px;
     border-bottom-left-radius:16px;
     -webkit-overflow-scrolling:touch;
@@ -973,15 +975,6 @@ canvas {
   nav ul.show {
     transform:translateX(0); /* Make the sidebar visible from right */
     right:0; /* Move it to the visible side */
-    box-shadow:-12px 0 24px rgba(0,0,0,.18); /* Only show shadow when open */
-  }
-
-  /* Lock page scroll when sidebar is open */
-  body.nav-open {
-    position:fixed;
-    width:100%;
-    height:100vh;
-    overflow:hidden;
   }
 
   /* Menu item look inside the sidebar */
@@ -1014,6 +1007,7 @@ canvas {
     min-width:120px;
   }
 }
+
 
 
 

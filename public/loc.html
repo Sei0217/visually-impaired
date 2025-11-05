@@ -67,8 +67,6 @@
   </main>
 
   <script>
-  // Helpers
-
 function setStatus(msg) {
   const el = document.getElementById('mapStatus');
   if (el) el.textContent = msg || '';
@@ -80,22 +78,20 @@ function setCoords(lat, lon) {
 function mapsLangParam() {
   const sel = document.getElementById('langSelect');
   const v = (sel && sel.value) ? sel.value : 'en';
-  // Google Maps only supports 'en' and 'fil' (no Cebuano)
-  return (v === 'tl') ? 'fil' : 'en';
+  return (v === 'tl') ? 'fil' : 'en'; // Only 'en' & 'fil' supported
 }
 function embedMap(lat, lon) {
   const iframe = document.getElementById('gmIframe');
   const hl = mapsLangParam();
   iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
   iframe.style.display = 'block';
-  setStatus('Displaying your saved location.');
+  setStatus('Showing your latest saved location.');
 }
 
 function loadSavedLocation() {
   const saved = localStorage.getItem("userCoords");
   if (!saved) {
-    setStatus("No saved location found. Please allow location access on the Home page first.");
-    document.getElementById('enableLocationBtn').style.display = 'none';
+    setStatus("No saved location. Please visit the Home page to allow location first.");
     return;
   }
 
@@ -109,10 +105,10 @@ function loadSavedLocation() {
   }
 }
 
-// Run immediately when page loads
-document.addEventListener("DOMContentLoaded", loadSavedLocation);
+// Always refresh map with the latest saved coordinates
+window.addEventListener('pageshow', loadSavedLocation);
 
-// Update map language when changing dropdown
+// Update map language dynamically
 document.getElementById('langSelect')?.addEventListener('change', () => {
   const saved = localStorage.getItem("userCoords");
   if (!saved) return;
@@ -123,10 +119,10 @@ document.getElementById('langSelect')?.addEventListener('change', () => {
     iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
   }
 });
+</script>
 
-
-
-  //Translation
+  <script>
+   //Translation
 
   /* ===== Unified Translation Script (translate.js) ===== */
 const I18N = {

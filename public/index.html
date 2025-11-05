@@ -682,8 +682,8 @@ function askLocation() {
     pos => {
       const lat = +pos.coords.latitude.toFixed(6);
       const lon = +pos.coords.longitude.toFixed(6);
-      localStorage.setItem("userCoords", JSON.stringify({ lat, lon }));
-      console.log("Location saved:", lat, lon);
+      localStorage.setItem("userCoords", JSON.stringify({ lat, lon, time: Date.now() }));
+      console.log("Updated location:", lat, lon);
     },
     err => {
       if (err.code === 1) alert("Please allow location access.");
@@ -695,20 +695,13 @@ function askLocation() {
   );
 }
 
-// 1️⃣ Try automatically when page loads
+// Ask automatically every time the home page is loaded
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(askLocation, 500);
 });
 
-// 2️⃣ Fallback button in case Chrome blocks auto-prompt
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.createElement("button");
-  btn.textContent = "Enable Location";
-  btn.style.cssText = "display:block;margin:2rem auto;padding:.5rem 1rem;";
-  btn.onclick = askLocation;
-  document.body.appendChild(btn);
-});
 </script>
+
 
 </body>
 

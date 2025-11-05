@@ -23,6 +23,21 @@
         grid-template-columns: repeat(1, 1fr) !important;
       }
     }
+
+    /* Language switcher (minimal) */
+    .lang-wrap { display:flex; align-items:center; gap:.5rem; margin-left:1rem; }
+    .lang-wrap label { color:#fff; font-size:.9rem; }
+    #langSelect {
+      appearance:none; background:#1f2937; color:#fff;
+      border:1px solid #374151; border-radius:8px;
+      padding:.35rem .75rem; font-size:.9rem; cursor:pointer;
+    }
+    header .container { display:flex; align-items:center; justify-content:space-between; }
+    header nav { display:flex; align-items:center; }
+    header nav ul#navMenu { display:flex; gap:1rem; align-items:center; }
+    @media (max-width: 640px) { .lang-wrap label { display:none; } }
+
+
   </style>
 </head>
 
@@ -39,6 +54,17 @@
 
           <li><a href="/loc.html" data-i18n="nav_location">Location</a></li>
         </ul>
+
+                <!-- Language switcher -->
+        <div class="lang-wrap" aria-label="Language selector">
+          <i class="fas fa-globe" aria-hidden="true" style="color:#fff;"></i>
+          <label for="langSelect" data-i18n="label_language">Language</label>
+          <select id="langSelect" aria-label="Language">
+            <option value="en">English</option>
+            <option value="tl">Tagalog</option>
+            <option value="ceb">Cebuano</option>
+          </select>
+        </div>
       </nav>
     </div>
   </header>

@@ -207,51 +207,98 @@
       reader.readAsDataURL(file);
     }
 
-    /* --------- Camera capture --------- */
-    startBtn.addEventListener('click', async () => {
-      try {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        } catch {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        }
-      } catch (err) {
-        console.error("Camera access error:", err);
-        alert("Unable to access your camera. Please allow permissions.");
-        return;
-      }
-      videoPrev.srcObject = stream;
-      videoPrev.style.display = 'block';
-      startBtn.style.display = 'none';
-      captureBtn.style.display = 'inline-flex';
-      placeholder.style.display = 'none';
-      analyzeBtn.disabled = true;
-      imagePrev.style.display = 'none';
-      currentImageFile = null;
-    });
+    /* --------- Camera capture (toggle + back camera first) --------- */
+async function getBestCameraStream() {
+  // try back camera first, then fallbacks
+  const tries = [
+    { video: { facingMode: { ideal: 'environment' } } },
+    { video: { facingMode: { exact: 'environment' } } },
+    { video: { facingMode: 'environment' } },
+  ];
+  // if permission already granted, try deviceId with “back/rear”
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const back = devices.find(d =>
+      d.kind === 'videoinput' &&
+      /back|rear|environment/i.test(d.label || '')
+    );
+    if (back) tries.unshift({ video: { deviceId: { exact: back.deviceId } } });
+  } catch {}
 
-    captureBtn.addEventListener('click', () => {
-      captureBtn.style.display = 'none';
-      const canvas = document.createElement('canvas');
-      canvas.width  = videoPrev.videoWidth;
-      canvas.height = videoPrev.videoHeight;
-      canvas.getContext('2d').drawImage(videoPrev, 0, 0);
-      canvas.toBlob(blob => {
-        currentImageFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
-        const reader = new FileReader();
-        reader.onload = e => {
-          imagePrev.src = e.target.result;
-          imagePrev.style.display = 'block';
-          videoPrev.style.display = 'none';
-          startBtn.style.display = 'inline-flex';
-          analyzeBtn.disabled = false;
-        };
-        reader.readAsDataURL(blob);
-      }, 'image/jpeg');
-      stopCamera();
-    });
+  for (const c of tries) {
+    try { return await navigator.mediaDevices.getUserMedia(c); } catch {}
+  }
+  // last resort
+  return navigator.mediaDevices.getUserMedia({ video: true });
+}
 
-    function stopCamera() { stream?.getTracks().forEach(t => t.stop()); }
+function setUseCamLabel(state /* 'on'|'off' */) {
+  if (state === 'on') {
+    startBtn.dataset.state = 'on';
+    startBtn.innerHTML = `<i class="fas fa-times"></i> <span>Stop Camera</span>`;
+  } else {
+    startBtn.dataset.state = 'off';
+    startBtn.innerHTML = `<i class="fas fa-camera"></i> <span data-i18n="btn_use_camera">Use Camera</span>`;
+  }
+}
+
+startBtn.addEventListener('click', async () => {
+  // toggle off → stop camera
+  if (startBtn.dataset.state === 'on') {
+    stopCamera();
+    videoPrev.style.display = 'none';
+    imagePrev.style.display = currentImageFile ? 'block' : 'none';
+    captureBtn.style.display = 'none';
+    analyzeBtn.disabled = !currentImageFile;
+    setUseCamLabel('off');
+    return;
+  }
+
+  // toggle on → start camera
+  try {
+    stream = await getBestCameraStream();
+  } catch (err) {
+    console.error('Camera access error:', err);
+    alert('Unable to access your camera. Please allow permissions.');
+    return;
+  }
+
+  videoPrev.srcObject = stream;
+  videoPrev.style.display = 'block';
+  imagePrev.style.display = 'none';
+  placeholder.style.display = 'none';
+  captureBtn.style.display = 'inline-flex';
+  analyzeBtn.disabled = true;
+  currentImageFile = null;
+  setUseCamLabel('on');
+});
+
+captureBtn.addEventListener('click', () => {
+  captureBtn.style.display = 'none';
+  const canvas = document.createElement('canvas');
+  canvas.width  = videoPrev.videoWidth;
+  canvas.height = videoPrev.videoHeight;
+  canvas.getContext('2d').drawImage(videoPrev, 0, 0);
+  canvas.toBlob(blob => {
+    currentImageFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+    const reader = new FileReader();
+    reader.onload = e => {
+      imagePrev.src = e.target.result;
+      imagePrev.style.display = 'block';
+      videoPrev.style.display = 'none';
+      analyzeBtn.disabled = false;
+      // keep the Use Camera button visible (set to "Use Camera")
+      setUseCamLabel('off');
+    };
+    reader.readAsDataURL(blob);
+  }, 'image/jpeg');
+  stopCamera();
+});
+
+function stopCamera() {
+  try { stream?.getTracks().forEach(t => t.stop()); } catch {}
+}
+
 
     /* ===== Wake the ML server on page load ===== */
     let mlReady = false;

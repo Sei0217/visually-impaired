@@ -922,9 +922,6 @@ canvas {
 /* ==========================
    MOBILE VIEW: Right-to-left drawer + Sticky Navbar
    ========================== */
-/* ==========================
-   MOBILE VIEW: Adjust Sidebar height to match content
-   ========================== */
 @media (max-width: 768px){
 
   /* stop horizontal “slide” when menu is closed */
@@ -952,10 +949,9 @@ canvas {
     position:fixed;
     top:0;
     right:-100%;  /* Completely hide off-screen to the right */
-    height:auto;  /* Let the height depend on content */
-    width:60%;    /* Sidebar width */
+    height: auto;
+    width:60%;    /* Smaller width for the sidebar */
     max-width:280px;
-    padding:64px 14px 12px;  /* Reduced bottom padding */
 
     background:#746CF6;
     color:#fff;
@@ -970,14 +966,6 @@ canvas {
   nav ul.show {
     transform:translateX(0); /* Make the sidebar visible from right */
     right:0; /* Move it to the visible side */
-  }
-
-  /* Lock page scroll when sidebar is open */
-  body.nav-open {
-    position:fixed;
-    width:100%;
-    height:100vh;
-    overflow:hidden;
   }
 
   /* Menu item look inside the sidebar */
@@ -1008,20 +996,6 @@ canvas {
     cursor:pointer;
     text-align-last:center; /* Center option text */
     min-width:120px;
-  }
-
-  /* Ensure the sidebar content height fits the items, push language to bottom */
-  nav ul {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    height: auto; /* auto height based on content */
-    flex-grow: 1; /* Fills remaining space if needed */
-  }
-
-  /* Push the language selector to the bottom */
-  .lang-wrap {
-    margin-top:auto; /* Ensures language is at the bottom */
   }
 
   /* Sticky Navbar for mobile */

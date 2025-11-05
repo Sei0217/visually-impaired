@@ -653,37 +653,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // === Mobile hamburger toggle ===
-(function(){
-  const btn = document.querySelector('.menu-toggle');
+// open/close toggle (hamburger, backdrop, body lock)
+function openMenu(open){
   const menu = document.querySelector('nav ul#navMenu');
   const backdrop = document.getElementById('navBackdrop');
+  if (!menu) return;
+  menu.classList.toggle('show', open);
+  document.body.classList.toggle('nav-open', open);
+  backdrop && backdrop.classList.toggle('show', open);
+}
+document.querySelector('.menu-toggle')?.addEventListener('click', () =>
+  openMenu(!document.querySelector('nav ul#navMenu')?.classList.contains('show'))
+);
+document.getElementById('navBackdrop')?.addEventListener('click', () => openMenu(false));
+window.addEventListener('resize', () => { if (innerWidth > 768) openMenu(false); });
 
-  if(!btn || !menu) return;
-
-  function openMenu(open){
-    menu.classList.toggle('show', open);
-    document.body.classList.toggle('nav-open', open);
-    if (backdrop) backdrop.classList.toggle('show', open);
-  }
-
-  btn.addEventListener('click', () => {
-    const willOpen = !menu.classList.contains('show');
-    openMenu(willOpen);
-  });
-
-  // tap outside to close
-  backdrop && backdrop.addEventListener('click', () => openMenu(false));
-
-  // kapag lumipat sa desktop size, siguraduhing sarado
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) openMenu(false);
-  });
-
-  // auto-close kapag pumili ng item
-  menu.querySelectorAll('a').forEach(a =>
-    a.addEventListener('click', () => openMenu(false))
-  );
-})();
 
 
 

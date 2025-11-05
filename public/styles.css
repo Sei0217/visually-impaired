@@ -920,59 +920,67 @@ canvas {
 }
 /* ===== Mobile hamburger menu behavior ===== */
 /* ===== MOBILE: Right side drawer + centered language ===== */
+/* ===== MOBILE ≤768px: right-side drawer, smaller + no side-slide ===== */
 @media (max-width: 768px){
 
-  /* Hamburger visible; ensure on top */
+  /* stop horizontal “slide” kahit sarado ang menu */
+  html, body { overflow-x: hidden; }
+
+  /* hamburger visible, on top */
   .menu-toggle{ display:block !important; z-index:1100; }
 
-  /* Off-canvas drawer (RIGHT) – default: hidden */
-  nav ul{
-    display:flex !important;
-    flex-direction:column; gap:12px;
-
-    position:fixed; top:0; right:0; height:100vh;
-    width:78%; max-width:320px;
-
-    padding:80px 16px 24px;           /* top padding ≈ header height */
-    background:#746CF6; color:#fff;
-
-    transform:translateX(100%);       /* 👈 nakatago sa kanan */
-    transition:transform .25s ease;
-    z-index:1005;
-
-    /* aesthetics */
-    box-shadow:-12px 0 24px rgba(0,0,0,.18);
-    border-top-left-radius:16px;
-    border-bottom-left-radius:16px;
-  }
-  /* Open state */
-  nav ul.show{ transform:translateX(0); }
-
-  /* Backdrop for tap-outside close */
+  /* backdrop */
   .nav-backdrop{
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,.35); z-index:1000;
   }
   .nav-backdrop.show{ display:block; }
 
-  /* Optional: lock scroll when drawer is open (requires body.nav-open from JS) */
-  body.nav-open{ overflow:hidden; }
+  /* drawer (RIGHT) – default: hidden off screen */
+  nav ul{
+    display:flex !important; flex-direction:column; gap:10px;
 
-  /* Clean menu items in drawer */
-  nav ul li a{
-    border-top:none !important;
-    padding:.65rem .8rem;
+    position:fixed; top:0; right:-1px;   /* -1px to avoid “sliver” */
+    height:100vh; width:66%; max-width:280px;  /* ⬅️ mas maliit */
+    padding:64px 14px 20px;               /* mas compact top padding */
+    background:#746CF6; color:#fff;
+
+    transform:translateX(100%);           /* nakatago sa kanan */
+    transition:transform .25s ease-out;
+    z-index:1005;
+
+    /* shadow only when open (para walang kita habang sarado) */
+    box-shadow:none;
+    border-top-left-radius:16px;
+    border-bottom-left-radius:16px;
+    -webkit-overflow-scrolling:touch;
+  }
+  nav ul.show{
+    transform:translateX(0);
+    box-shadow:-12px 0 24px rgba(0,0,0,.18);
   }
 
-  /* CENTER the Language row */
-    .lang-wrap { display:flex; align-items:center;}
-    .lang-wrap label { color:#fff; font-size:.9rem; }
-    #langSelect {
-      appearance:none; background:#1f2937; color:#fff;
-      border:1px solid #374151; border-radius:8px;
-      padding:.35rem .75rem; font-size:.9rem; cursor:pointer;
-    }
+  /* lock page scroll habang bukas ang menu */
+  body.nav-open{
+    position:fixed; width:100%; height:100vh;
+    overflow:hidden;
+  }
+
+  /* menu item look */
+  nav ul li a{
+    border-top:none !important;
+    padding:.6rem .75rem;
+  }
+
+  /* language row centered sa drawer */
+  .lang-wrap{
+    margin-top:6px; width:100%;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .lang-wrap label{ display:none; }           /* optional: hide label */
+  #langSelect{ margin:0 auto; min-width:120px; text-align-last:center; }
 }
+
 
 
 

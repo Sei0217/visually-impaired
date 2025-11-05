@@ -410,9 +410,7 @@ try {
 
 (function(){
   /* ===================== CONFIG ===================== */
-  const TTS_API_BASE =
-    (window.API_BASE || window.API || '').replace(/\/$/,'')
-    || 'https://visually-impaired.onrender.com';
+  const TTS_API_BASE ="";
 
   /* (Micro) reduce DNS/TLS cost */
   try{
@@ -455,7 +453,8 @@ try {
       const v = cache.get(key); cache.delete(key); cache.set(key, v); // LRU refresh
       return v;
     }
-    const url = `${TTS_API_BASE}/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}`;
+    const url = (TTS_API_BASE || "") +
+            `/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}`;
     const res = await fetch(url, { cache:'force-cache' });
     const blob = await res.blob();
     const blobURL = URL.createObjectURL(blob);

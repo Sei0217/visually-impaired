@@ -9,6 +9,9 @@ from fastapi import Query
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from gtts import gTTS
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 # -------- perf limits for small instances --------
 os.environ.setdefault("OMP_NUM_THREADS", "1")
@@ -24,12 +27,17 @@ except Exception:
 # -------------------------------------------------
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # tighten to your Vercel origin if you want
-    allow_methods=["*"],
+    allow_origins=[
+        "https://visually-impaired-nine.vercel.app",
+        "http://localhost:3000",
+    ],
+    allow_origin_regex=r"https://.*\.vercel\.app$",
+    allow_methods=["GET", "HEAD", "OPTIONS"],
     allow_headers=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
 )
 
 @app.get("/tts")
@@ -45,7 +53,7 @@ def tts(text: str = Query(..., max_length=400),
     tts.write_to_fp(mp3)
     mp3.seek(0)
     return StreamingResponse(mp3, media_type="audio/mpeg")
-    
+
 # Model path (relative-safe)
 BASE_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.getenv("MODEL_PATH", os.path.join(BASE_DIR, "best.pt"))

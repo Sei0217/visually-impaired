@@ -924,6 +924,9 @@ canvas {
 /* ==========================
    MOBILE VIEW: Fix Sidebar Hidden Completely 
    ========================== */
+/* ==========================
+   MOBILE VIEW: Right-to-left drawer + reduced bottom padding
+   ========================== */
 @media (max-width: 768px){
 
   /* stop horizontal “slide” when menu is closed */
@@ -943,18 +946,18 @@ canvas {
   .nav-backdrop.show{ display:block; }
 
   /* Off-canvas drawer (RIGHT) – default: hidden off-screen */
-  nav ul{
+  nav ul {
     display:flex !important;
     flex-direction:column;
     gap:10px;
 
     position:fixed;
     top:0;
-    left:-100%; /* Fully hide off-screen */
+    right:-100%;  /* Completely hide off-screen to the right */
     height:100vh;
-    width:60%;    /* Adjust sidebar width */
+    width:60%;    /* Smaller width for the sidebar */
     max-width:280px;
-    padding:64px 14px 20px;  /* Compact top padding */
+    padding:64px 14px 12px;  /* Reduced bottom padding */
 
     background:#746CF6;
     color:#fff;
@@ -968,8 +971,8 @@ canvas {
     -webkit-overflow-scrolling:touch;
   }
   nav ul.show {
-    transform:translateX(0); /* Open the sidebar */
-    left:0; /* Make sure it’s fully visible */
+    transform:translateX(0); /* Make the sidebar visible from right */
+    right:0; /* Move it to the visible side */
     box-shadow:-12px 0 24px rgba(0,0,0,.18); /* Only show shadow when open */
   }
 
@@ -1011,6 +1014,7 @@ canvas {
     min-width:120px;
   }
 }
+
 
 
 /* ==========================

@@ -5,6 +5,10 @@ import cv2
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
+from fastapi import Query
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+from gtts import gTTS
 
 # -------- perf limits for small instances --------
 os.environ.setdefault("OMP_NUM_THREADS", "1")
@@ -28,6 +32,20 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+@app.get("/tts")
+def tts(text: str = Query(..., max_length=400),
+        lang: str = Query("en")):
+    # map UI lang → gTTS lang
+    lang_map = {"tl": "tl", "ceb": "ceb", "en": "en", "en-PH": "en", "fil": "tl"}
+    g_lang = lang_map.get(lang, "en")
+
+    # generate mp3 in-memory
+    mp3 = BytesIO()
+    tts = gTTS(text=text, lang=g_lang, slow=False)
+    tts.write_to_fp(mp3)
+    mp3.seek(0)
+    return StreamingResponse(mp3, media_type="audio/mpeg")
+    
 # Model path (relative-safe)
 BASE_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.getenv("MODEL_PATH", os.path.join(BASE_DIR, "best.pt"))

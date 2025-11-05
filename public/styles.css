@@ -925,7 +925,7 @@ body.nav-open { overflow: hidden; }
     display:flex !important;
     flex-direction:column; gap:12px;
 
-    position:fixed; top:0; left:0; height:100vh;
+    position:fixed; top:0; right:0; height:100vh;
     width:78%; max-width:320px;
 
     padding:80px 16px 24px;           /* top padding ≈ header height */

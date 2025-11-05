@@ -919,9 +919,6 @@ canvas {
   .nav-backdrop{ display:none !important; }
 }
 /* ===== Mobile hamburger menu behavior ===== */
-/* ==========================
-   MOBILE VIEW: Right-to-left drawer + Sticky Navbar
-   ========================== */
 @media (max-width: 768px){
 
   /* stop horizontal “slide” when menu is closed */
@@ -949,11 +946,10 @@ canvas {
     position:fixed;
     top:0;
     right:-100%;  /* Completely hide off-screen to the right */
-    height: auto;
-    width:60%;    /* Smaller width for the sidebar */
+    height:100vh;  /* Ensure full height of the sidebar */
+    width:60%;    /* Sidebar width */
     max-width:280px;
-    padding-top: 32px;
-    padding-bottom: 16px;
+    padding:64px 14px 12px;  /* Reduced bottom padding */
 
     background:#746CF6;
     color:#fff;
@@ -970,10 +966,19 @@ canvas {
     right:0; /* Move it to the visible side */
   }
 
+  /* Lock page scroll when sidebar is open */
+  body.nav-open {
+    position:fixed;
+    width:100%;
+    height:100vh;
+    overflow:hidden;
+  }
+
   /* Menu item look inside the sidebar */
   nav ul li a {
     border-top:none !important;
-    padding:.6rem .75rem;
+    padding:.8rem .9rem;  /* Increased padding */
+    font-size:1.2rem;  /* Increased font size */
   }
 
   /* Language row centered inside the drawer */
@@ -994,7 +999,7 @@ canvas {
     border:1px solid #374151;
     border-radius:8px;
     padding:.35rem .75rem;
-    font-size:.9rem;
+    font-size:1.2rem;  /* Increased font size */
     cursor:pointer;
     text-align-last:center; /* Center option text */
     min-width:120px;
@@ -1005,13 +1010,9 @@ canvas {
     position: sticky;
     top: 0;
     z-index: 9999;
-    background-color: #746CF6; /* Adjust the background color */
+    background-color: var(--brand); /* Adjust the background color */
   }
 }
-
-
-
-
 
 /* ==========================
    STICKY NAVBAR (for mobile and desktop)

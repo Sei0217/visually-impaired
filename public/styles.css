@@ -1023,17 +1023,14 @@ canvas {
     min-width:120px;
   }
 
-  /* Ensure the main navbar is sticky on mobile */
+  /* Sticky Navbar for mobile */
   header {
     position: sticky;
     top: 0;
-    z-index: 9999;  /* Make sure it's above other content */
-    background-color: var(--brand);  /* Adjust background color */
-    width: 100%; /* Ensure it's full width */
-    padding: 0 16px; /* Optional: Adjust padding if needed */
+    z-index: 9999;
+    background-color: #746CF6; /* Adjust the background color */
   }
 }
-
 
 
 

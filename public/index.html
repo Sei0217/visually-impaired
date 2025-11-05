@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>Home | Object Recognition and Navigation for Visually Impaired Person</title>
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -39,18 +39,18 @@
           <li><a href="/index.html" data-i18n="nav_home">Home</a></li>
           <li><a href="/information.html" data-i18n="nav_info">Object information</a></li>
           <li><a href="/loc.html" data-i18n="nav_location">Location</a></li>
+          <li>
+                <div class="lang-wrap" aria-label="Language selector">
+              <i class="fas fa-globe" aria-hidden="true" style="color:#fff;"></i>
+              <label for="langSelect" data-i18n="label_language">Language</label>
+              <select id="langSelect" aria-label="Language">
+                <option value="en">English</option>
+                <option value="tl">Tagalog</option>
+                <option value="ceb">Cebuano</option>
+              </select>
+            </div>
+          </li>
         </ul>
-
-        <!-- Language switcher -->
-        <div class="lang-wrap" aria-label="Language selector">
-          <i class="fas fa-globe" aria-hidden="true" style="color:#fff;"></i>
-          <label for="langSelect" data-i18n="label_language">Language</label>
-          <select id="langSelect" aria-label="Language">
-            <option value="en">English</option>
-            <option value="tl">Tagalog</option>
-            <option value="ceb">Cebuano</option>
-          </select>
-        </div>
       </nav>
     </div>
   </header>
@@ -662,7 +662,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.querySelector('.menu-toggle');
+  const nav = document.querySelector('nav ul#navMenu');
+  if (!toggle || !nav) return;
+
+  toggle.addEventListener('click', () => {
+    nav.classList.toggle('show');                 // open/close
+    document.body.classList.toggle('nav-open');   // (optional) lock scroll
+  });
+});
+</script>
+
+
 
 
 

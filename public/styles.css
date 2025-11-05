@@ -898,4 +898,5 @@ canvas {
   background:#111827; color:#fff; border:1px solid #374151;
 }
 
+body.nav-open { overflow: hidden; }
 

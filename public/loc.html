@@ -66,62 +66,58 @@
     </div>
   </main>
 
-  <script>
+  
+<script>
+//Location
+
+
 function setStatus(msg) {
   const el = document.getElementById('mapStatus');
   if (el) el.textContent = msg || '';
 }
 function setCoords(lat, lon) {
   const el = document.getElementById('gmCoords');
-  if (el) el.textContent = (lat && lon) ? `${lat}, ${lon}` : '--';
+  if (el) el.textContent = `${lat}, ${lon}`;
 }
 function mapsLangParam() {
   const sel = document.getElementById('langSelect');
   const v = (sel && sel.value) ? sel.value : 'en';
-  return (v === 'tl') ? 'fil' : 'en'; // Only 'en' & 'fil' supported
+  return (v === 'tl') ? 'fil' : 'en';
 }
 function embedMap(lat, lon) {
   const iframe = document.getElementById('gmIframe');
   const hl = mapsLangParam();
-  iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
+  iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed&t=${Date.now()}`;
   iframe.style.display = 'block';
-  setStatus('Showing your latest saved location.');
+  setStatus('Showing your current location.');
 }
 
-function loadSavedLocation() {
-  const saved = localStorage.getItem("userCoords");
-  if (!saved) {
-    setStatus("No saved location. Please visit the Home page to allow location first.");
-    return;
-  }
+// Read coordinates from URL and show map
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const lat = params.get("lat");
+  const lon = params.get("lon");
 
-  try {
-    const { lat, lon } = JSON.parse(saved);
-    if (!lat || !lon) throw new Error("Invalid saved data");
+  if (lat && lon) {
     setCoords(lat, lon);
     embedMap(lat, lon);
-  } catch {
-    setStatus("Invalid saved location data.");
+  } else {
+    setStatus("No coordinates passed. Please allow location on the Home page first.");
   }
 }
 
-// Always refresh map with the latest saved coordinates
-window.addEventListener('pageshow', loadSavedLocation);
+window.addEventListener('DOMContentLoaded', loadFromURL);
 
-// Update map language dynamically
+// Update map when language changes
 document.getElementById('langSelect')?.addEventListener('change', () => {
-  const saved = localStorage.getItem("userCoords");
-  if (!saved) return;
-  const { lat, lon } = JSON.parse(saved);
-  const iframe = document.getElementById('gmIframe');
-  if (iframe && lat && lon) {
-    const hl = mapsLangParam();
-    iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
-  }
+  const params = new URLSearchParams(window.location.search);
+  const lat = params.get("lat");
+  const lon = params.get("lon");
+  if (lat && lon) embedMap(lat, lon);
 });
-</script>
 
-  <script>
+
+
    //Translation
 
   /* ===== Unified Translation Script (translate.js) ===== */

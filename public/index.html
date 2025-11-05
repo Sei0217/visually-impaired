@@ -407,21 +407,13 @@ try {
   /* ====== TTS (Text-to-Speech) helpers ====== */
 
 
-
 (function(){
-  /* ===================== CONFIG ===================== */
+  // ====== CONFIG: set this to your ML server base ======
   const TTS_API_BASE =
     (window.API_BASE || window.API || '').replace(/\/$/,'')
-    || 'https://visually-impaired.onrender.com';
+    || 'https://visually-impaired.onrender.com';  // <-- change if needed
 
-  /* Preconnect to shave off DNS/TLS time */
-  try{
-    const l1=document.createElement('link'); l1.rel='preconnect'; l1.href=TTS_API_BASE; l1.crossOrigin='anonymous';
-    const l2=document.createElement('link'); l2.rel='dns-prefetch'; l2.href=TTS_API_BASE;
-    document.head.appendChild(l1); document.head.appendChild(l2);
-  }catch(_){}
-
-  /* =================== PHRASE HELPERS =================== */
+  // ---------- VOICE PHRASE HELPERS ----------
   const SPOKEN_LABELS = {
     tl:  { person:'tao', chair:'silya', door:'pinto', stairs:'hagdan' },
     ceb: { person:'tawo', chair:'lingkoranan', door:'pultahan', stairs:'hagdanan' },
@@ -446,90 +438,64 @@ try {
     return document.getElementById('langSelect')?.value || 'en';
   }
 
-  /* ============= FAST CLIENT CACHE + PREFETCH ============= */
-  // In-memory LRU cache of Blob URLs so repeats are instant
-  const cache = new Map();                // key -> blobURL
-  const MAX_ITEMS = 24;
-
-  async function fetchTTS(text, lang){
-    const key = `${lang}|${text}`;
-    if (cache.has(key)) {
-      // refresh LRU position
-      const v = cache.get(key); cache.delete(key); cache.set(key, v);
-      return v;
+  // ---------- OPTIONAL WEB SPEECH (fallback only) ----------
+  const hasWebSpeech = !!window.speechSynthesis;
+  let unlocked = false, voices = [];
+  function refreshVoices(){ try{ voices = speechSynthesis.getVoices()||[]; }catch{} }
+  if (hasWebSpeech){
+    refreshVoices();
+    if ('onvoiceschanged' in speechSynthesis) speechSynthesis.onvoiceschanged = refreshVoices;
+    (function poll(i=0){ if (voices.length || i>12) return; refreshVoices(); setTimeout(()=>poll(i+1), 250); })();
+  }
+  function unlockWebSpeech(){
+    if (unlocked || !hasWebSpeech) return;
+    unlocked = true;
+    try{ const u=new SpeechSynthesisUtterance('.'); u.volume=0; speechSynthesis.speak(u); }catch{}
+  }
+  function pickVoiceFor(lang){
+    const desired = lang==='tl' ? ['fil-PH','tl-PH','fil','tl','en-PH','en-US']
+                  : lang==='ceb'? ['ceb-PH','fil-PH','tl-PH','en-PH','en-US']
+                  :                 ['en-PH','en-US','en-GB'];
+    for (const d of desired){
+      const v = voices.find(v => (v.lang||'').toLowerCase().startsWith(d.toLowerCase()));
+      if (v) return v;
     }
-    const url = `${TTS_API_BASE}/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}`;
-    const res = await fetch(url, { mode:'cors', cache:'force-cache' });
-    const blob = await res.blob();              // MP3 from server (already server-cached)
-    const blobURL = URL.createObjectURL(blob);
-    cache.set(key, blobURL);
-    if (cache.size > MAX_ITEMS) {               // simple LRU trim
-      const firstKey = cache.keys().next().value;
-      URL.revokeObjectURL(cache.get(firstKey));
-      cache.delete(firstKey);
+    return voices[0] || null;
+  }
+  async function speakWebSpeech(text, lang){
+    unlockWebSpeech();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoiceFor(lang);
+    if (v){ u.voice=v; u.lang=v.lang; }
+    else { u.lang = (lang==='tl'?'fil-PH':lang==='ceb'?'en-PH':'en-US'); }
+    u.rate=0.95; u.pitch=1.0; u.volume=1.0;
+    try{ if (speechSynthesis.speaking) speechSynthesis.cancel(); }catch{}
+    setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch{} },30);
+  }
+
+  // ---------- SERVER TTS (gTTS via FastAPI /tts) ----------
+  let ttsAudio = null;
+  async function speakServer(text, lang){
+    if (!TTS_API_BASE) return;
+    if (!ttsAudio){
+      ttsAudio = new Audio();
+      ttsAudio.preload = 'none';
     }
-    return blobURL;
+    const url = `${TTS_API_BASE}/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang||'en')}`;
+    ttsAudio.src = url;
+    try { await ttsAudio.play(); } catch(e){ console.warn('Audio play blocked or failed:', e); throw e; }
   }
 
-  // Prefetch common phrases right after first gesture
-  function prefetchCommon(){
-    const lang = getUILang();
-    const common = [
-      ttsNone(lang),
-      ttsPhrase('person', lang),
-      ttsPhrase('chair',  lang),
-      ttsPhrase('door',   lang),
-      ttsPhrase('stairs', lang)
-    ];
-    common.forEach(t => fetchTTS(t, lang).catch(()=>{}));
-  }
-
-  /* ================== AUDIO + WARM-UP ================== */
-  const audio = new Audio();
-  audio.preload = 'auto';
-  audio.playsInline = true;
-  let audioUnlocked = false;
-
-  function warmAudioOnce(){
-    if (audioUnlocked) return;
-    audioUnlocked = true;
-    // warm using WebAudio whisper (silent)
-    try{
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC){
-        const ac = new AC(), osc = ac.createOscillator(), g = ac.createGain();
-        g.gain.value = 0.0001; osc.connect(g); g.connect(ac.destination);
-        osc.start(); osc.stop(ac.currentTime + 0.03);
-        setTimeout(()=>ac.close().catch(()=>{}), 150);
-      }
-    }catch(_){}
-    // also prefetch after the first real gesture
-    setTimeout(prefetchCommon, 0);
-  }
-  ['pointerdown','touchstart','click','keydown'].forEach(ev=>{
-    document.addEventListener(ev, warmAudioOnce, { once:true, passive:true });
-  });
-
-  /* ================ THROTTLE / DEDUPE ================= */
-  let lastKey = ''; let lastTime = 0;
-  const MIN_GAP_MS = 700;  // do not spam speaks faster than this
-
-  /* ==================== PUBLIC API ==================== */
+  // ---------- PUBLIC API (server-first) ----------
   window.speak = async function(text, lang){
     lang = lang || getUILang();
     if (!text) return;
-
-    const now = Date.now();
-    const key = `${lang}|${text}`;
-    if (key === lastKey && (now - lastTime) < MIN_GAP_MS) return; // dedupe
-    lastKey = key; lastTime = now;
-
-    try{
-      const blobURL = await fetchTTS(text, lang); // client cache + server cache
-      audio.src = blobURL;
-      await audio.play();
-    }catch(e){
-      console.warn('TTS play failed:', e);
+    try {
+      // Always prefer server TTS for a consistent (female) voice
+      return await speakServer(text, lang);
+    } catch(e){
+      // If server fails, fallback to Web Speech (when available)
+      if (hasWebSpeech) return speakWebSpeech(text, lang);
     }
   };
 
@@ -541,9 +507,8 @@ try {
   };
 
   window.getUILang = getUILang;
+
 })();
-
-
 
 
 

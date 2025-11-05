@@ -954,7 +954,7 @@ canvas {
     position:fixed;
     top:0;
     right:-100%;  /* Completely hide off-screen to the right */
-    height:100vh;
+    height:50vh;
     width:60%;    /* Smaller width for the sidebar */
     max-width:280px;
     padding:64px 14px 12px;  /* Reduced bottom padding */

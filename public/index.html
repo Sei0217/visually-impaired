@@ -405,47 +405,104 @@ try {
     window.openFullscreen = openFullscreen;
 
   /* ====== TTS (Text-to-Speech) helpers ====== */
+
+// ========== Mobile-browser safe TTS (keeps your API) ==========
 const VOICE_CACHE = { list: [] };
-function loadVoicesOnce(){ VOICE_CACHE.list = speechSynthesis.getVoices(); }
-if (typeof speechSynthesis !== 'undefined') {
-  loadVoicesOnce();
-  speechSynthesis.onvoiceschanged = loadVoicesOnce;
+let TTS_UNLOCKED = false;
+
+// Resolve when voices are actually available (even if voiceschanged never fires)
+function voicesReady(timeoutMs = 3000){
+  return new Promise(resolve => {
+    const start = Date.now();
+    function check(){
+      const list = (window.speechSynthesis?.getVoices?.() || []);
+      if (list.length) { VOICE_CACHE.list = list; return resolve(list); }
+      if (Date.now() - start > timeoutMs) return resolve(list); // give up gracefully
+      setTimeout(check, 150);
+    }
+    check();
+  });
 }
+
+// One-time unlock after a real user gesture (mobile browsers need this)
+function unlockTTS(){
+  if (TTS_UNLOCKED || !('speechSynthesis' in window)) return;
+  TTS_UNLOCKED = true;
+  try {
+    const u = new SpeechSynthesisUtterance('.');
+    u.volume = 0; // silent blip
+    const v = pickVoiceFor(getUILang());
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+    speechSynthesis.speak(u);
+  } catch(_) {}
+}
+// Hook multiple gesture types (works across iOS/Android browsers)
+['pointerdown','touchstart','click','keydown'].forEach(ev =>
+  document.addEventListener(ev, unlockTTS, { once:true, passive:true })
+);
+
+// Keep trying to cache voices (some mobile browsers populate late)
+if ('speechSynthesis' in window) {
+  try { VOICE_CACHE.list = speechSynthesis.getVoices() || []; } catch(_) {}
+  if ('onvoiceschanged' in speechSynthesis) {
+    speechSynthesis.onvoiceschanged = () => {
+      try { VOICE_CACHE.list = speechSynthesis.getVoices() || []; } catch(_) {}
+    };
+  }
+}
+
+// Your original preference logic, kept
 function pickVoiceFor(langCode) {
   const voices = VOICE_CACHE.list || [];
   const desired = langCode === 'tl' ? ['fil-PH','tl-PH','fil','tl','en-PH','en-US']
-                : langCode === 'ceb' ? ['ceb-PH','fil-PH','tl-PH','en-PH','en-US']
-                : ['en-PH','en-US','en-GB'];
+                : langCode === 'ceb'? ['ceb-PH','fil-PH','tl-PH','en-PH','en-US']
+                :                      ['en-PH','en-US','en-GB'];
   for (const d of desired) {
     const v = voices.find(v => (v.lang || '').toLowerCase().startsWith(d.toLowerCase()));
     if (v) return v;
   }
   return voices[0] || null;
 }
-function speak(text, lang){
-  if (!('speechSynthesis' in window) || !text) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang === 'tl' ? 'fil-PH' : lang === 'ceb' ? 'en-PH' : 'en-US'; // ceb fallback sa EN voice
-  const v = pickVoiceFor(lang);
-  if (v) u.voice = v;
-  u.rate = 0.5; u.pitch = 1.0; u.volume = 1.0;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-}
-function cap(s){ return (s||'').toString().replace(/^./, c=>c.toUpperCase()); }
 
-// Optional dictionary para mas natural ang salita per language
+// MOBILE-SAFE speak: waits for gesture/voices, avoids same-tick cancel+speaK drops
+async function speak(text, lang){
+  if (!text || !('speechSynthesis' in window)) return;
+
+  // Ensure a gesture has happened and voices populated (best effort)
+  unlockTTS();
+  await voicesReady(2000);
+
+  const u = new SpeechSynthesisUtterance(text);
+  // language fallback
+  u.lang = (lang === 'tl') ? 'fil-PH' : (lang === 'ceb') ? 'en-PH' : 'en-US';
+  const v = pickVoiceFor(lang);
+  if (v) { u.voice = v; u.lang = v.lang; }
+
+  // Good defaults for phone speakers
+  u.rate  = 0.9;
+  u.pitch = 1.0;
+  u.volume= 1.0;
+
+  // Avoid dropping utterance: cancel only if currently speaking, then defer speak()
+  try { if (speechSynthesis.speaking) speechSynthesis.cancel(); } catch(_){}
+  setTimeout(() => {
+    try { speechSynthesis.speak(u); } catch(e){ console.warn('speak() failed', e); }
+  }, 50); // small delay helps Safari/Chrome mobile
+}
+
+// ===== Your helpers (unchanged) =====
+function cap(s){ return (s||'').toString().replace(/^./, c=>c.toUpperCase()); }
 const SPOKEN_LABELS = {
-  tl: { person: 'tao', chair: 'silya', door: 'pinto', stairs: 'hagdan' },
-  ceb:{ person: 'tawo', chair: 'lingkoranan', door: 'pultahan', stairs: 'hagdanan' },
-  en: { person: 'person', chair: 'chair', door: 'door', stairs: 'stairs' }
+  tl:  { person:'tao', chair:'silya', door:'pinto', stairs:'hagdan' },
+  ceb: { person:'tawo', chair:'lingkoranan', door:'pultahan', stairs:'hagdanan' },
+  en:  { person:'person', chair:'chair', door:'door', stairs:'stairs' }
 };
 function ttsPhrase(label, lang) {
   const dict = SPOKEN_LABELS[lang] || SPOKEN_LABELS.en;
-  const key = (label||'').toLowerCase();
-  const say = dict[key] || label || 'object';
-  if (lang === 'tl') return key === 'person' ? 'Tao ang na-detect' : `${cap(say)} na-detect`;
-  if (lang === 'ceb')return key === 'person' ? 'Tawo na-detect'    : `${cap(say)} na-detect`;
+  const key  = (label||'').toLowerCase();
+  const say  = dict[key] || label || 'object';
+  if (lang === 'tl')  return key === 'person' ? 'Tao ang na-detect' : `${cap(say)} na-detect`;
+  if (lang === 'ceb') return key === 'person' ? 'Tawo na-detect'    : `${cap(say)} na-detect`;
   return key === 'person' ? 'Person detected' : `${cap(say)} detected`;
 }
 function ttsNone(lang){
@@ -454,7 +511,6 @@ function ttsNone(lang){
        : 'No object detected';
 }
 function getUILang(){
-  // Gagamitin ang currentLang() kung meron ka na sa i18n; fallback sa dropdown
   if (typeof currentLang === 'function') return currentLang();
   return document.getElementById('langSelect')?.value || 'en';
 }
@@ -464,6 +520,8 @@ function announceDetections(dets){
   const first = dets[0];
   speak(ttsPhrase(first?.label || 'object', lang), lang);
 }
+
+
 
 //Translation
 

@@ -672,9 +672,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- other scripts -->
 <script>
-function askForLocationPermission() {
+function askLocation() {
   if (!('geolocation' in navigator)) {
-    console.warn("Geolocation not supported.");
+    alert("Your browser does not support Geolocation.");
     return;
   }
 
@@ -683,21 +683,33 @@ function askForLocationPermission() {
       const lat = +pos.coords.latitude.toFixed(6);
       const lon = +pos.coords.longitude.toFixed(6);
       localStorage.setItem("userCoords", JSON.stringify({ lat, lon }));
-      console.log("Saved location:", lat, lon);
+      console.log("Location saved:", lat, lon);
     },
     err => {
-      console.warn("Geo error:", err);
-      if (err.code === 1) alert("Permission denied — please allow location access.");
+      if (err.code === 1) alert("Please allow location access.");
+      else if (err.code === 2) alert("Position unavailable.");
+      else if (err.code === 3) alert("Request timed out.");
+      else alert("Unable to get your location.");
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 }
 
-// Ask every time the homepage is opened or reloaded
-window.addEventListener("pageshow", () => {
-  setTimeout(askForLocationPermission, 500);
+// 1️⃣ Try automatically when page loads
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(askLocation, 500);
+});
+
+// 2️⃣ Fallback button in case Chrome blocks auto-prompt
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.createElement("button");
+  btn.textContent = "Enable Location";
+  btn.style.cssText = "display:block;margin:2rem auto;padding:.5rem 1rem;";
+  btn.onclick = askLocation;
+  document.body.appendChild(btn);
 });
 </script>
+
 </body>
 
 

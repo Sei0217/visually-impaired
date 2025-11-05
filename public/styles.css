@@ -1030,6 +1030,12 @@ canvas {
     z-index: 9999;
     background-color: #746CF6; /* Adjust the background color */
   }
+
+  .menu-toggle {
+  position: relative;
+  z-index: 9999;  /* Make sure it's above other content */
+  pointer-events: auto;  /* Ensure it remains clickable */
+}
 }
 
 

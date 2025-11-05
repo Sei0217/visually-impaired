@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Home | Object Recognition and Navigation for Visually Impaired Person</title>
+  <title>Location| Object Recognition and Navigation for Visually Impaired Person</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
@@ -57,11 +57,11 @@
   <main>
     <div class="map-wrap">
       <div class="map-head">
-        <h2><i class="fas fa-location-arrow"></i> Your Location Map</h2>
+        <h2><i class="fas fa-location-arrow" data-i18n="map_title"></i> Your Location Map</h2>
       </div>
-      <div id="mapStatus">Asking for your location…</div>
+      <div id="mapStatus" data-i18n="map_status_ask">Asking for your location…</div>
       <p class="status">Lat/Lon: <span id="gmCoords">--</span></p>
-      <button id="enableLocationBtn" type="button">Enable location</button>
+      <button id="enableLocationBtn" type="button" data-i18n="enable_location">Enable location</button>
       <iframe id="gmIframe" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
   </main>
@@ -96,7 +96,7 @@
           resolve({ lat, lon, acc });
         },
         err => reject(err),
-        { enableHighAccuracy:true, timeout:10000, maximumAge:5000 }
+        { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
       );
     });
   }
@@ -175,6 +175,9 @@
     }
   });
 </script>
+<!--Translation-->
+<script src="translate.js"></script>
+
 
 
 </body>

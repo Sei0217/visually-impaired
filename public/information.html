@@ -30,14 +30,14 @@
   <header>
     <div class="container" >
       <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-      <a style="color: #fff;text-decoration: none;" href="/index.html"><h1><i ></i>Object Recognition and Navigation </h1></a>
+      <a style="color: #fff;text-decoration: none;" href="/index.html"><h1 data-i18n="site_title"><i ></i>Object Recognition and Navigation </h1></a>
       <nav >
         <ul id="navMenu">
-          <li><a href="/index.html">Home</a></li>
+          <li><a href="/index.html" data-i18n="nav_home">Home</a></li>
           
-          <li ><a href="/information">Object Information</a></li>
+          <li ><a href="/information" data-i18n="nav_info">Object Information</a></li>
 
-          <li><a href="/loc.html">Location</a></li>
+          <li><a href="/loc.html" data-i18n="nav_location">Location</a></li>
         </ul>
       </nav>
     </div>
@@ -45,25 +45,25 @@
 
   <main class="container"  style="padding-top: 5vh;">
 <section id="home" class="hero-section">
-      <h2>Object Information &nbsp;</h2>
+      <h2 data-i18n="info_title">Object Information &nbsp;</h2>
       <!-- <p>Integrating deep-learning object detection to deliver real-time guidance and obstacle alerts for visually impaired users. .&nbsp;</p> -->
       <div class="feature-grid">
         <div class="feature-card">
           <i class="fas fa-person"></i>
-          <h3>Peoples</h3>
-          <p>The camera automatically detects and identifies people in real time.</p>
+          <h3 data-i18n="info_people_h3">Peoples</h3>
+          <p data-i18n="info_people_p">The camera automatically detects and identifies people in real time.</p>
         </div>
 
         <div class="feature-card">
           <i class="fas fa-door-open"></i>
-          <h3>Doors</h3>
-          <p>The system recognizes doors and helps indicate their location and orientation.</p>
+          <h3 data-i18n="info_door_h3">Doors</h3>
+          <p data-i18n="info_door_p">The system recognizes doors and helps indicate their location and orientation.</p>
         </div>
 
         <div class="feature-card">
           <i class="fas fa-stairs"></i>
-          <h3>Stairs</h3>
-          <p>The camera detects stairs to assist with safe navigation and movement.</p>
+          <h3 data-i18n="info_stairs_h3">Stairs</h3>
+          <p data-i18n="info_stairs_p">The camera detects stairs to assist with safe navigation and movement.</p>
         </div>
       </div>
 		
@@ -108,6 +108,9 @@
 
     loadDiseaseCatalog();
   </script>
+
+  <script src="translate.js"></script>
+
 </body>
 
 </html>

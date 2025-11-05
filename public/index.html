@@ -406,52 +406,68 @@ try {
 
   /* ====== TTS (Text-to-Speech) helpers ====== */
 
-// ========== Mobile-browser safe TTS (keeps your API) ==========
+// ===== Mobile-safe TTS for WebView =====
 const VOICE_CACHE = { list: [] };
 let TTS_UNLOCKED = false;
 
-// Resolve when voices are actually available (even if voiceschanged never fires)
-function voicesReady(timeoutMs = 3000){
-  return new Promise(resolve => {
-    const start = Date.now();
-    function check(){
-      const list = (window.speechSynthesis?.getVoices?.() || []);
-      if (list.length) { VOICE_CACHE.list = list; return resolve(list); }
-      if (Date.now() - start > timeoutMs) return resolve(list); // give up gracefully
-      setTimeout(check, 150);
-    }
-    check();
-  });
+/* Try to load voices even if voiceschanged never fires */
+function loadVoicesOnce(){
+  try { VOICE_CACHE.list = window.speechSynthesis?.getVoices?.() || []; }
+  catch(_) { VOICE_CACHE.list = []; }
+}
+if ('speechSynthesis' in window) {
+  loadVoicesOnce();
+  if ('onvoiceschanged' in speechSynthesis) {
+    speechSynthesis.onvoiceschanged = loadVoicesOnce;
+  }
+  // Poll up to ~3s (Android WebView quirks)
+  let tries = 0;
+  const iv = setInterval(()=>{
+    if ((VOICE_CACHE.list||[]).length || ++tries > 12) clearInterval(iv);
+    else loadVoicesOnce();
+  }, 250);
 }
 
-// One-time unlock after a real user gesture (mobile browsers need this)
-function unlockTTS(){
+/* Hard unlock on first user gesture (required by mobile) */
+function ensureTTSUnlocked(){
   if (TTS_UNLOCKED || !('speechSynthesis' in window)) return;
   TTS_UNLOCKED = true;
   try {
+    // 1) warm up audio path (optional, 60ms beep – comment out if ayaw mo ng tunog)
+    warmBeep(60);
+
+    // 2) silent utterance to unlock synthesizer
     const u = new SpeechSynthesisUtterance('.');
-    u.volume = 0; // silent blip
+    u.volume = 0; // silent
     const v = pickVoiceFor(getUILang());
     if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
     speechSynthesis.speak(u);
   } catch(_) {}
 }
-// Hook multiple gesture types (works across iOS/Android browsers)
-['pointerdown','touchstart','click','keydown'].forEach(ev =>
-  document.addEventListener(ev, unlockTTS, { once:true, passive:true })
-);
+// hook multiple gestures para sure
+['pointerdown','touchstart','click','keydown'].forEach(ev=>{
+  document.addEventListener(ev, ensureTTSUnlocked, { once:true, passive:true });
+});
 
-// Keep trying to cache voices (some mobile browsers populate late)
-if ('speechSynthesis' in window) {
-  try { VOICE_CACHE.list = speechSynthesis.getVoices() || []; } catch(_) {}
-  if ('onvoiceschanged' in speechSynthesis) {
-    speechSynthesis.onvoiceschanged = () => {
-      try { VOICE_CACHE.list = speechSynthesis.getVoices() || []; } catch(_) {}
-    };
-  }
+/* Tiny beep to wake audio focus (optional) */
+function warmBeep(ms=60, freq=880){
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ac = new AC();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.frequency.value = freq;
+    gain.gain.value = 0.0001; // halos di marinig; taasan to 0.02 kung gusto mo marinig
+    osc.connect(gain); gain.connect(ac.destination);
+    const t = ac.currentTime;
+    osc.start(t);
+    osc.stop(t + ms/1000);
+    setTimeout(()=>ac.close().catch(()=>{}), ms+50);
+  } catch(_) {}
 }
 
-// Your original preference logic, kept
+/* Keep your voice preference */
 function pickVoiceFor(langCode) {
   const voices = VOICE_CACHE.list || [];
   const desired = langCode === 'tl' ? ['fil-PH','tl-PH','fil','tl','en-PH','en-US']
@@ -464,13 +480,10 @@ function pickVoiceFor(langCode) {
   return voices[0] || null;
 }
 
-// MOBILE-SAFE speak: waits for gesture/voices, avoids same-tick cancel+speaK drops
-async function speak(text, lang){
+/* MOBILE-SAFE speak: unlock + tiny defer after cancel() */
+function speak(text, lang){
   if (!text || !('speechSynthesis' in window)) return;
-
-  // Ensure a gesture has happened and voices populated (best effort)
-  unlockTTS();
-  await voicesReady(2000);
+  ensureTTSUnlocked();
 
   const u = new SpeechSynthesisUtterance(text);
   // language fallback
@@ -478,19 +491,20 @@ async function speak(text, lang){
   const v = pickVoiceFor(lang);
   if (v) { u.voice = v; u.lang = v.lang; }
 
-  // Good defaults for phone speakers
+  // phone-friendly voice settings
   u.rate  = 0.9;
   u.pitch = 1.0;
   u.volume= 1.0;
 
-  // Avoid dropping utterance: cancel only if currently speaking, then defer speak()
   try { if (speechSynthesis.speaking) speechSynthesis.cancel(); } catch(_){}
-  setTimeout(() => {
+
+  // defer a hair to avoid same-tick drop in mobile engines
+  setTimeout(()=> {
     try { speechSynthesis.speak(u); } catch(e){ console.warn('speak() failed', e); }
-  }, 50); // small delay helps Safari/Chrome mobile
+  }, 30);
 }
 
-// ===== Your helpers (unchanged) =====
+/* === Your helpers 그대로 === */
 function cap(s){ return (s||'').toString().replace(/^./, c=>c.toUpperCase()); }
 const SPOKEN_LABELS = {
   tl:  { person:'tao', chair:'silya', door:'pinto', stairs:'hagdan' },
@@ -520,6 +534,14 @@ function announceDetections(dets){
   const first = dets[0];
   speak(ttsPhrase(first?.label || 'object', lang), lang);
 }
+
+/* === OPTIONAL: auto-unlock kapag pinindot ang Analyze/Hamburger === */
+window.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelector('.menu-toggle')?.addEventListener('click', ensureTTSUnlocked, { once:true });
+  document.getElementById('analyzeBtn')?.addEventListener('click', ensureTTSUnlocked, { once:true });
+});
+
+
 
 
 

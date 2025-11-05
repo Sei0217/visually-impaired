@@ -921,15 +921,18 @@ canvas {
 /* ===== Mobile hamburger menu behavior ===== */
 /* ===== MOBILE: Right side drawer + centered language ===== */
 /* ===== MOBILE ≤768px: right-side drawer, smaller + no side-slide ===== */
+/* ==========================
+   MOBILE VIEW: Fix Sidebar Hidden Completely 
+   ========================== */
 @media (max-width: 768px){
 
-  /* Stop horizontal "slide" on menu close */
+  /* stop horizontal “slide” when menu is closed */
   html, body { overflow-x: hidden; }
 
   /* Hamburger visible; ensure on top */
-  .menu-toggle { display:block !important; z-index:1100; }
+  .menu-toggle{ display:block !important; z-index:1100; }
 
-  /* Backdrop */
+  /* Backdrop for tap-outside close */
   .nav-backdrop{
     display:none;
     position:fixed;
@@ -937,26 +940,25 @@ canvas {
     background:rgba(0,0,0,.35);
     z-index:1000;
   }
-  .nav-backdrop.show { display:block; }
+  .nav-backdrop.show{ display:block; }
 
   /* Off-canvas drawer (RIGHT) – default: hidden off-screen */
-  nav ul {
+  nav ul{
     display:flex !important;
     flex-direction:column;
     gap:10px;
 
     position:fixed;
     top:0;
-    left:-1px;   /* -1px to avoid sliver gap */
+    left:-100%; /* Fully hide off-screen */
     height:100vh;
-    width:60%;    /* Smaller width */
+    width:60%;    /* Adjust sidebar width */
     max-width:280px;
     padding:64px 14px 20px;  /* Compact top padding */
 
     background:#746CF6;
     color:#fff;
 
-    transform:translateX(100%); /* Hidden by default */
     transition:transform .25s ease-out;
     z-index:1005;
 
@@ -966,7 +968,8 @@ canvas {
     -webkit-overflow-scrolling:touch;
   }
   nav ul.show {
-    transform:translateX(0);
+    transform:translateX(0); /* Open the sidebar */
+    left:0; /* Make sure it’s fully visible */
     box-shadow:-12px 0 24px rgba(0,0,0,.18); /* Only show shadow when open */
   }
 
@@ -1008,6 +1011,7 @@ canvas {
     min-width:120px;
   }
 }
+
 
 /* ==========================
    STICKY NAVBAR (for mobile and desktop)

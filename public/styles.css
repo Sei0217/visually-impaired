@@ -900,21 +900,52 @@ canvas {
 
 body.nav-open { overflow: hidden; }
 
-@media (max-width:768px){
-  /* kapag bukas ang menu, gawin nating wrap layout */
-  nav ul.show{
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 12px;
-  }
-  /* gawing full row ang unang dalawang item (Home, Object Info) */
-  nav ul.show li:nth-child(-n+2){ flex-basis:100%; text-align:center; }
-  /* Location at Language magkakahilera (share row) */
-  nav ul.show li:nth-child(n+3){ flex-basis:auto; }
-  /* alisin yung divider at sobrang padding sa mobile menu items */
-  nav ul li a{ border-top: none !important; padding: .6rem .8rem; }
+/* ===== Mobile hamburger menu behavior ===== */
+@media (max-width: 768px){
+  /* hamburger button visible on mobile */
+  .menu-toggle{ display:block !important; z-index:1100; }
 
-  /* paliitin/itago ang "Language" label kung masikip */
+  /* itago ang menu by default sa mobile */
+  nav ul{
+    display:none !important;                 /* <-- key */
+    position:fixed; left:0; right:0;
+    top: var(--nav-height, 64px);
+    background:#746CF6;
+    padding:14px 16px 18px;
+    flex-direction:column;
+    gap:12px;
+    border-bottom-left-radius:16px;
+    border-bottom-right-radius:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    z-index:1005;
+  }
+  /* lalabas lang kapag may .show (itinotoggle ng JS) */
+  nav ul.show{ display:flex !important; }
+
+  /* backdrop para sa tap-outside close */
+  .nav-backdrop{
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.35); z-index:1000;
+  }
+  .nav-backdrop.show{ display:block; }
+
+  /* optional: hindi na umi-scroll ang body kapag bukas ang menu */
+  body.nav-open{ overflow:hidden; }
+
+  /* language pill kasama sa list; itago ang label kung masikip */
+  .lang-wrap{ display:flex; align-items:center; gap:8px; }
   .lang-wrap label{ display:none; }
 }
+
+/* Desktop stays inline */
+@media (min-width: 769px){
+  .menu-toggle{ display:none !important; }
+  nav ul{
+    display:flex !important;
+    position:static; flex-direction:row; gap:20px;
+    background:transparent; box-shadow:none; padding:0;
+  }
+  .nav-backdrop{ display:none !important; }
+}
+
 

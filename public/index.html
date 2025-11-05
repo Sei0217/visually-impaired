@@ -667,39 +667,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // --- Force location permission request on each visit ---
-    function askForLocationPermission() {
-      if (!('geolocation' in navigator)) {
-        console.warn("Geolocation not supported.");
-        return;
-      }
-
-      // Always fresh request
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          console.log("Permission granted. Location acquired:", pos.coords.latitude, pos.coords.longitude);
-          // We don't need to show map here — just test permission
-        },
-        err => {
-          if (err.code === 1) console.warn("Permission denied by user.");
-          else if (err.code === 2) console.warn("Position unavailable.");
-          else if (err.code === 3) console.warn("Request timed out.");
-          else console.warn("Unknown geolocation error:", err);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0 // ⚡ Always forces new permission check
-        }
-      );
-    }
-
-    // Ask every time the homepage is opened or reloaded
-    window.addEventListener("pageshow", () => {
-      setTimeout(askForLocationPermission, 500);
-    });
-
 
 </script>
+
+<!-- other scripts -->
+<script>
+function askForLocationPermission() {
+  if (!('geolocation' in navigator)) {
+    console.warn("Geolocation not supported.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = +pos.coords.latitude.toFixed(6);
+      const lon = +pos.coords.longitude.toFixed(6);
+      localStorage.setItem("userCoords", JSON.stringify({ lat, lon }));
+      console.log("Saved location:", lat, lon);
+    },
+    err => {
+      console.warn("Geo error:", err);
+      if (err.code === 1) alert("Permission denied — please allow location access.");
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+// Ask every time the homepage is opened or reloaded
+window.addEventListener("pageshow", () => {
+  setTimeout(askForLocationPermission, 500);
+});
+</script>
+</body>
+
 
 
 

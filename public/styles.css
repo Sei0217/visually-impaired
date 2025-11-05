@@ -952,6 +952,8 @@ canvas {
     height: auto;
     width:60%;    /* Smaller width for the sidebar */
     max-width:280px;
+    padding-top: 32px;
+    padding-bottom: 16px;
 
     background:#746CF6;
     color:#fff;

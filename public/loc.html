@@ -174,9 +174,197 @@
       iframe.src = `https://www.google.com/maps?q=${lat},${lon}&z=16&hl=${hl}&output=embed`;
     }
   });
+
+
+  //Translation
+
+  /* ===== Unified Translation Script (translate.js) ===== */
+const I18N = {
+  en: {
+    meta_home: "Home | Object Recognition and Navigation for Visually Impaired Person",
+    meta_info: "Object Information | Object Recognition and Navigation",
+    meta_loc: "Location | Object Recognition and Navigation",
+    site_title: "Object Recognition and Navigation",
+    nav_home: "Home",
+    nav_info: "Object Information",
+    nav_location: "Location",
+    label_language: "Language",
+
+    hero_h2: "Enhancing Object Recognition and Navigation for Visually Impaired Person using Deep Learning Algorithm",
+    hero_p: "Integrating deep-learning object detection to deliver guidance and obstacle alerts.",
+
+    feature_capture_h3: "Capture Image",
+    feature_capture_p: "Use your device camera to capture an object.",
+    feature_upload_h3: "Upload Image",
+    feature_upload_p: "Upload an image from your gallery for analysis.",
+    feature_info_h3: "Object Information",
+    feature_info_p: "Learn more about object recognition and navigation.",
+
+    detect_h2: "Detect Object",
+    detect_p: "Select or capture an image of an object for analysis:",
+    btn_use_camera: "Use Camera",
+    btn_upload_image: "Upload Image",
+    btn_analyze: "Analyze Image",
+    placeholder_none: "No image selected",
+    spinner_analyzing: "Analyzing...",
+
+    results_h3: "Analysis Results",
+    result_object_type: "Object Type:",
+    result_confidence: "Confidence Score:",
+
+    // info.html
+    info_title: "Object Information",
+    info_people_h3: "People",
+    info_people_p: "The camera automatically detects and identifies people in real time.",
+    info_door_h3: "Doors",
+    info_door_p: "The system recognizes doors and helps indicate their location and orientation.",
+    info_stairs_h3: "Stairs",
+    info_stairs_p: "The camera detects stairs to assist with safe navigation and movement.",
+
+    // loc.html
+    map_title: "Your Location Map",
+    map_status_ask: "Asking for your location…",
+    enable_location: "Enable location",
+  },
+
+  tl: {
+    meta_home: "Home | Object Recognition at Navigation para sa Taong may Kapansanan sa Paningin",
+    meta_info: "Impormasyon ng Bagay | Object Recognition at Navigation",
+    meta_loc: "Lokasyon | Object Recognition at Navigation",
+    site_title: "Object Recognition at Navigation",
+    nav_home: "Bahay",
+    nav_info: "Impormasyon ng Bagay",
+    nav_location: "Lokasyon",
+    label_language: "Wika",
+
+    hero_h2: "Pagpapahusay ng Object Recognition at Navigation para sa Taong may Kapansanan sa Paningin gamit ang Deep Learning",
+    hero_p: "Pinagsasama ang object detection para magbigay ng gabay at babala sa mga hadlang.",
+
+    feature_capture_h3: "Kunan ng Larawan",
+    feature_capture_p: "Gamitin ang camera ng device para kumuha ng bagay.",
+    feature_upload_h3: "Mag-upload ng Larawan",
+    feature_upload_p: "Mag-upload mula sa gallery para ma-analyze.",
+    feature_info_h3: "Impormasyon ng Bagay",
+    feature_info_p: "Alamin pa tungkol sa object recognition at navigation.",
+
+    detect_h2: "Mag-detect ng Bagay",
+    detect_p: "Pumili o kumuha ng larawan para sa pag-aanalisa:",
+    btn_use_camera: "Gamitin ang Camera",
+    btn_upload_image: "Mag-upload ng Larawan",
+    btn_analyze: "I-Analyze ang Larawan",
+    placeholder_none: "Walang napiling larawan",
+    spinner_analyzing: "Nag-aanalisa...",
+
+    results_h3: "Mga Resulta ng Pagsusuri",
+    result_object_type: "Uri ng Bagay:",
+    result_confidence: "Puntos ng Kumpiyansa:",
+
+    info_title: "Impormasyon ng Bagay",
+    info_people_h3: "Mga Tao",
+    info_people_p: "Awtomatikong tinutukoy ng kamera ang mga tao sa totoong oras.",
+    info_door_h3: "Mga Pinto",
+    info_door_p: "Kinikilala ng sistema ang mga pinto at tinutukoy ang lokasyon nito.",
+    info_stairs_h3: "Hagdan",
+    info_stairs_p: "Nadidiskubre ng kamera ang hagdan para sa ligtas na paggalaw.",
+
+    map_title: "Mapa ng Iyong Lokasyon",
+    map_status_ask: "Hinihingi ang iyong lokasyon…",
+    enable_location: "Paganahin ang lokasyon",
+  },
+
+  ceb: {
+    meta_home: "Home | Pag-ila ug Pag-navigate alang sa Adunay Kapansanan sa Panan-aw",
+    meta_info: "Impormasyon sa Butang | Pag-ila ug Pag-navigate",
+    meta_loc: "Lokasyon | Pag-ila ug Pag-navigate",
+    site_title: "Pag-ila ug Pag-navigate",
+    nav_home: "Balay",
+    nav_info: "Impormasyon sa Butang",
+    nav_location: "Lokasyon",
+    label_language: "Pinulongan",
+
+    hero_h2: "Pagpaayo sa Pag-ila ug Pag-navigate alang sa tawo nga adunay kapansanan sa panan-aw gamit ang Deep Learning",
+    hero_p: "Naghiusa sa object detection aron maghatag og giya ug pahimangno sa mga babag.",
+
+    feature_capture_h3: "Kuhaa ang Larawan",
+    feature_capture_p: "Gamita ang camera sa imong device aron mokuhag hulagway sa butang.",
+    feature_upload_h3: "I-upload ang Larawan",
+    feature_upload_p: "I-upload gikan sa gallery para sa analisa.",
+    feature_info_h3: "Impormasyon sa Butang",
+    feature_info_p: "Ilaila pa ang object recognition ug navigation.",
+
+    detect_h2: "Pag-detect sa Butang",
+    detect_p: "Pili o kuhaa ang hulagway para sa analisa:",
+    btn_use_camera: "Gamita ang Camera",
+    btn_upload_image: "I-upload ang Larawan",
+    btn_analyze: "I-Analisa ang Larawan",
+    placeholder_none: "Walay napiling hulagway",
+    spinner_analyzing: "Nag-analisa...",
+
+    results_h3: "Mga Resulta sa Analisa",
+    result_object_type: "Klase sa Butang:",
+    result_confidence: "Porsiyento sa Kumpiyansa:",
+
+    info_title: "Impormasyon sa Butang",
+    info_people_h3: "Mga Tawo",
+    info_people_p: "Awtomatikong mailhan sa kamera ang mga tawo sa tinuod nga oras.",
+    info_door_h3: "Mga Pultahan",
+    info_door_p: "Makaila ang sistema sa mga pultahan ug nagpakita sa ilang lokasyon.",
+    info_stairs_h3: "Hagdanan",
+    info_stairs_p: "Makita sa kamera ang hagdanan para sa luwas nga paglakaw.",
+
+    map_title: "Mapa sa Imong Lokasyon",
+    map_status_ask: "Nagpangayo sa imong lokasyon…",
+    enable_location: "Paandara ang lokasyon",
+  }
+};
+
+// === Helpers ===
+function detectDefaultLang() {
+  const nav = (navigator.language || 'en').toLowerCase();
+  if (nav.startsWith('fil') || nav.startsWith('tl')) return 'tl';
+  if (nav.startsWith('ceb') || nav.startsWith('cb')) return 'ceb';
+  return 'en';
+}
+function currentLang() {
+  return localStorage.getItem('app.lang') || detectDefaultLang();
+}
+function t(key, lang) {
+  const L = lang || currentLang();
+  return (I18N[L] && I18N[L][key]) || (I18N.en[key] || key);
+}
+function applyI18N(lang) {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key && t(key, lang)) el.textContent = t(key, lang);
+  });
+
+  // Detect which meta title to use based on current page
+  const path = location.pathname.toLowerCase();
+  if (path.includes('information')) document.title = t('meta_info', lang);
+  else if (path.includes('loc')) document.title = t('meta_loc', lang);
+  else document.title = t('meta_home', lang);
+}
+function setLang(lang) {
+  if (!I18N[lang]) lang = 'en';
+  localStorage.setItem('app.lang', lang);
+  const select = document.getElementById('langSelect');
+  if (select) select.value = lang;
+  applyI18N(lang);
+}
+
+// === Initialize ===
+document.addEventListener('DOMContentLoaded', () => {
+  const lang = currentLang();
+  setLang(lang);
+
+  const select = document.getElementById('langSelect');
+  if (select) select.addEventListener('change', e => setLang(e.target.value));
+});
+
 </script>
-<!--Translation-->
-<script src="./translate.js"></script>
+
+
+
 
 
 

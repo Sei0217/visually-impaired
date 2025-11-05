@@ -919,6 +919,9 @@ canvas {
   .nav-backdrop{ display:none !important; }
 }
 /* ===== Mobile hamburger menu behavior ===== */
+/* ==========================
+   MOBILE VIEW: Right-to-left drawer with scrollable content and no box shadow
+   ========================== */
 @media (max-width: 768px){
 
   /* stop horizontal “slide” when menu is closed */
@@ -960,24 +963,30 @@ canvas {
     border-top-left-radius:16px;
     border-bottom-left-radius:16px;
     -webkit-overflow-scrolling:touch;
+
+    /* Remove box-shadow */
+    box-shadow:none;
   }
   nav ul.show {
     transform:translateX(0); /* Make the sidebar visible from right */
     right:0; /* Move it to the visible side */
   }
 
-  /* Lock page scroll when sidebar is open */
+  /* Enable scrolling inside the sidebar */
+  nav ul {
+    overflow-y:auto; /* Enable vertical scrolling inside sidebar */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling */
+  }
+
+  /* Lock page scroll when sidebar is open (only on sidebar, not the whole page) */
   body.nav-open {
-    position:fixed;
-    width:100%;
-    height:100vh;
-    overflow:hidden;
+    position:relative; /* Allow page scroll */
   }
 
   /* Menu item look inside the sidebar */
   nav ul li a {
     border-top:none !important;
-    padding:.8rem .9rem;  /* Increased padding */
+    padding:.6rem .75rem;
     font-size:1.2rem;  /* Increased font size */
   }
 
@@ -1010,9 +1019,10 @@ canvas {
     position: sticky;
     top: 0;
     z-index: 9999;
-    background-color: var(--brand); /* Adjust the background color */
+    background-color: #746CF6; /* Adjust the background color */
   }
 }
+
 
 /* ==========================
    STICKY NAVBAR (for mobile and desktop)

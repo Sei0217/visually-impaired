@@ -900,52 +900,88 @@ canvas {
 
 body.nav-open { overflow: hidden; }
 
+@media (min-width: 769px){
+    .lang-wrap { display:flex; align-items:center; gap:.5rem; margin-left:1rem; }
+    .lang-wrap label { color:#fff; font-size:.9rem; }
+    #langSelect {
+      appearance:none; background:#1f2937; color:#fff;
+      border:1px solid #374151; border-radius:8px;
+      padding:.35rem .75rem; font-size:.9rem; cursor:pointer;
+    }
+    header .container { display:flex; align-items:center; justify-content:space-between; }
+    header nav { display:flex; align-items:center; }
+    header nav ul#navMenu { display:flex; gap:1rem; align-items:center; }
+    @media (max-width: 640px) { .lang-wrap label { display:none; } }
+}
 /* ===== Mobile hamburger menu behavior ===== */
+/* ===== MOBILE: Right side drawer + centered language ===== */
 @media (max-width: 768px){
-  /* hamburger button visible on mobile */
+
+  /* Hamburger visible; ensure on top */
   .menu-toggle{ display:block !important; z-index:1100; }
 
-  /* itago ang menu by default sa mobile */
+  /* Off-canvas drawer (RIGHT) – default: hidden */
   nav ul{
-    display:none !important;                 /* <-- key */
-    position:fixed; left:0; right:0;
-    top: var(--nav-height, 64px);
-    background:#746CF6;
-    padding:14px 16px 18px;
-    flex-direction:column;
-    gap:12px;
-    border-bottom-left-radius:16px;
-    border-bottom-right-radius:16px;
-    box-shadow:0 8px 24px rgba(0,0,0,.18);
-    z-index:1005;
-  }
-  /* lalabas lang kapag may .show (itinotoggle ng JS) */
-  nav ul.show{ display:flex !important; }
+    display:flex !important;
+    flex-direction:column; gap:12px;
 
-  /* backdrop para sa tap-outside close */
+    position:fixed; top:0; left:0; height:100vh;
+    width:78%; max-width:320px;
+
+    padding:80px 16px 24px;           /* top padding ≈ header height */
+    background:#746CF6; color:#fff;
+
+    transform:translateX(100%);       /* 👈 nakatago sa kanan */
+    transition:transform .25s ease;
+    z-index:1005;
+
+    /* aesthetics */
+    box-shadow:-12px 0 24px rgba(0,0,0,.18);
+    border-top-left-radius:16px;
+    border-bottom-left-radius:16px;
+  }
+  /* Open state */
+  nav ul.show{ transform:translateX(0); }
+
+  /* Backdrop for tap-outside close */
   .nav-backdrop{
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,.35); z-index:1000;
   }
   .nav-backdrop.show{ display:block; }
 
-  /* optional: hindi na umi-scroll ang body kapag bukas ang menu */
+  /* Optional: lock scroll when drawer is open (requires body.nav-open from JS) */
   body.nav-open{ overflow:hidden; }
 
-  /* language pill kasama sa list; itago ang label kung masikip */
-  .lang-wrap{ display:flex; align-items:center; gap:8px; }
-  .lang-wrap label{ display:none; }
+  /* Clean menu items in drawer */
+  nav ul li a{
+    border-top:none !important;
+    padding:.65rem .8rem;
+  }
+
+  /* CENTER the Language row */
+  .lang-wrap, .lang-area, .language, .lang{
+    display:flex; align-items:center; justify-content:center;
+    gap:8px; margin-top:6px;
+  }
+  /* If you kept a label, keep it; remove next line if ayaw mo ng label */
+  /* .lang-wrap label{ display:none; } */
+
+  /* ensure the pill/button itself centers */
+  .lang-wrap .lang-pill,
+  .lang-wrap button{ margin-inline:auto; }
 }
 
-/* Desktop stays inline */
+/* Desktop stays inline, unchanged */
 @media (min-width: 769px){
   .menu-toggle{ display:none !important; }
   nav ul{
-    display:flex !important;
-    position:static; flex-direction:row; gap:20px;
-    background:transparent; box-shadow:none; padding:0;
+    display:flex !important; position:static; transform:none;
+    height:auto; width:auto; padding:0; gap:20px;
+    background:transparent; box-shadow:none; border-radius:0;
   }
   .nav-backdrop{ display:none !important; }
 }
+
 
 

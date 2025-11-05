@@ -407,19 +407,20 @@ try {
   /* ====== TTS (Text-to-Speech) helpers ====== */
 
 
+
 /* =========================================================
-   MOBILE-SAFE TTS (works on mobile browser & WebView)
-   - Unlock on first real gesture
-   - Voice list polling (kapag walang voiceschanged)
-   - Safe fallbacks + small defer + retry
-   - Keeps your API: speak(), announceDetections(), getUILang()
+   MOBILE-SAFE TTS + TEMP "TEST VOICE" BUTTON (single script)
+   - Unlock on first gesture
+   - Voice list polling
+   - Safe fallbacks + retry
+   - Keeps API: speak(), announceDetections(), getUILang()
+   - Adds: mobile-only floating 🔊 Test Voice button
    ========================================================= */
 (function(){
+  /* ---------- TTS CORE ---------- */
   if (!('speechSynthesis' in window)) {
-    // No TTS available: keep API to avoid errors
-    window.speak = function(){};
-    window.announceDetections = function(){};
-    window.getUILang = function(){ return 'en'; };
+    window.speak = function(){}; window.announceDetections = function(){}; window.getUILang = function(){return 'en';};
+    makeTestBtn('❌ Web Speech not supported'); // still show to inform
     return;
   }
 
@@ -430,47 +431,35 @@ try {
     try { VOICE_CACHE.list = speechSynthesis.getVoices() || []; }
     catch { VOICE_CACHE.list = []; }
   }
-  // initial + events + polling (mobile quirk)
   refreshVoices();
-  if ('onvoiceschanged' in speechSynthesis) {
-    speechSynthesis.onvoiceschanged = refreshVoices;
-  }
-  (function poll(i=0){
-    if ((VOICE_CACHE.list||[]).length || i > 12) return;
-    refreshVoices(); setTimeout(()=>poll(i+1), 250);
-  })();
+  if ('onvoiceschanged' in speechSynthesis) speechSynthesis.onvoiceschanged = refreshVoices;
+  (function poll(i=0){ if ((VOICE_CACHE.list||[]).length || i>12) return; refreshVoices(); setTimeout(()=>poll(i+1), 250); })();
 
-  // --- Hard unlock once (required by mobile autoplay policies) ---
   function ensureTTSUnlocked(){
     if (TTS_UNLOCKED) return;
     TTS_UNLOCKED = true;
     try {
       const u = new SpeechSynthesisUtterance('.');
-      u.volume = 0; // silent unlock
+      u.volume = 0;
       const v = pickVoiceFor(getUILang());
       if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
       speechSynthesis.speak(u);
     } catch {}
   }
-  // Also resume when returning to tab
-  document.addEventListener('visibilitychange', ()=>{
-    if (!document.hidden) { try{ speechSynthesis.resume(); }catch{} }
-  });
+  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) { try{ speechSynthesis.resume(); }catch{} } });
 
-  // --- Voice preference (kept from your code) ---
-  function pickVoiceFor(langCode) {
+  function pickVoiceFor(langCode){
     const voices = VOICE_CACHE.list || [];
     const desired = langCode === 'tl' ? ['fil-PH','tl-PH','fil','tl','en-PH','en-US']
                   : langCode === 'ceb'? ['ceb-PH','fil-PH','tl-PH','en-PH','en-US']
                   :                      ['en-PH','en-US','en-GB'];
-    for (const d of desired) {
-      const v = voices.find(v => (v.lang || '').toLowerCase().startsWith(d.toLowerCase()));
+    for (const d of desired){
+      const v = voices.find(v => (v.lang||'').toLowerCase().startsWith(d.toLowerCase()));
       if (v) return v;
     }
     return voices[0] || null;
   }
 
-  // --- Public: speak(text, lang) with retry ---
   async function speak(text, lang){
     if (!text) return;
     ensureTTSUnlocked();
@@ -480,10 +469,7 @@ try {
     if (v) { u.voice = v; u.lang = v.lang; }
     else { u.lang = (lang==='tl' ? 'fil-PH' : lang==='ceb' ? 'en-PH' : 'en-US'); }
 
-    // phone-friendly settings
-    u.rate  = 0.95;
-    u.pitch = 1.0;
-    u.volume= 1.0;
+    u.rate = 0.95; u.pitch = 1.0; u.volume = 1.0;
 
     try { if (speechSynthesis.speaking) speechSynthesis.cancel(); } catch {}
 
@@ -498,31 +484,28 @@ try {
         }
       }, 400);
     };
-    setTimeout(trySpeak, 30); // avoid same-tick drop after cancel()
+    setTimeout(trySpeak, 30);
   }
 
-  // ===== Your helpers (kept) =====
   function cap(s){ return (s||'').toString().replace(/^./, c=>c.toUpperCase()); }
   const SPOKEN_LABELS = {
     tl:  { person:'tao', chair:'silya', door:'pinto', stairs:'hagdan' },
     ceb: { person:'tawo', chair:'lingkoranan', door:'pultahan', stairs:'hagdanan' },
     en:  { person:'person', chair:'chair', door:'door', stairs:'stairs' }
   };
-  function ttsPhrase(label, lang) {
+  function ttsPhrase(label, lang){
     const dict = SPOKEN_LABELS[lang] || SPOKEN_LABELS.en;
     const key  = (label||'').toLowerCase();
     const say  = dict[key] || label || 'object';
-    if (lang === 'tl')  return key === 'person' ? 'Tao ang na-detect' : `${cap(say)} na-detect`;
-    if (lang === 'ceb') return key === 'person' ? 'Tawo na-detect'    : `${cap(say)} na-detect`;
-    return key === 'person' ? 'Person detected' : `${cap(say)} detected`;
+    if (lang==='tl')  return key==='person' ? 'Tao ang na-detect' : `${cap(say)} na-detect`;
+    if (lang==='ceb') return key==='person' ? 'Tawo na-detect'    : `${cap(say)} na-detect`;
+    return key==='person' ? 'Person detected' : `${cap(say)} detected`;
   }
   function ttsNone(lang){
-    return lang === 'tl' ? 'Walang na-detect'
-         : lang === 'ceb' ? 'Walay na-detect'
-         : 'No object detected';
+    return lang==='tl' ? 'Walang na-detect' : lang==='ceb' ? 'Walay na-detect' : 'No object detected';
   }
   function getUILang(){
-    if (typeof window.currentLang === 'function') return window.currentLang();
+    if (typeof window.currentLang==='function') return window.currentLang();
     return document.getElementById('langSelect')?.value || 'en';
   }
   function announceDetections(dets){
@@ -531,23 +514,10 @@ try {
     const first = dets[0];
     speak(ttsPhrase(first?.label || 'object', lang), lang);
   }
+  window.speak = speak; window.announceDetections = announceDetections; window.getUILang = getUILang;
 
-  // Expose the API
-  window.speak = speak;
-  window.announceDetections = announceDetections;
-  window.getUILang = getUILang;
-
-  /* =========================================================
-     WIRING: Unlock TTS on first REAL user actions
-     (No hamburger binding here, as requested)
-     ========================================================= */
+  /* ---------- WIRING (unlock on real actions) ---------- */
   window.addEventListener('DOMContentLoaded', () => {
-    // Global first-gesture unlock (safe)
-    ['pointerdown','touchstart','click','keydown'].forEach(ev=>{
-      document.addEventListener(ev, ensureTTSUnlocked, { once:true, passive:true });
-    });
-
-    // Specific controls you mentioned
     const wire = (sel, ev='click') => {
       const el = document.querySelector(sel);
       if (el) el.addEventListener(ev, ensureTTSUnlocked, { once:true });
@@ -555,11 +525,65 @@ try {
     wire('#analyzeBtn');
     wire('#startCameraBtn');
     wire('#detectBtn');
-    // file input uses 'change'
     const file = document.getElementById('uploadInput');
     if (file) file.addEventListener('change', ensureTTSUnlocked, { once:true });
+
+    // Create the Test Voice button (mobile only)
+    if (isMobile()) makeTestBtn();
   });
+
+  function isMobile(){
+    return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  /* ---------- TEMP TEST BUTTON ---------- */
+  function makeTestBtn(message){
+    // avoid duplicates
+    if (document.getElementById('voiceTestBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'voiceTestBtn';
+    btn.type = 'button';
+    btn.textContent = message || '🔊 Test Voice';
+    Object.assign(btn.style, {
+      position:'fixed', right:'12px', bottom:'12px',
+      zIndex:'99999',
+      padding:'10px 14px',
+      border:'0', borderRadius:'999px',
+      background:'#111827', color:'#fff',
+      fontSize:'14px', lineHeight:'1',
+      boxShadow:'none', cursor:'pointer'
+    });
+    document.body.appendChild(btn);
+
+    btn.addEventListener('click', () => {
+      ensureTTSUnlocked();
+
+      // Build a test utterance with callbacks to know success
+      const lang = getUILang();
+      const phrase = (lang==='tl') ? 'Test: gumagana ang boses.'
+                   : (lang==='ceb') ? 'Test: ga tingog ang boses.'
+                   : 'Test: voice is ready.';
+      try {
+        const v = pickVoiceFor(lang);
+        const u = new SpeechSynthesisUtterance(phrase);
+        if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = (lang==='tl'?'fil-PH':lang==='ceb'?'en-PH':'en-US'); }
+        u.rate=0.95; u.pitch=1.0; u.volume=1.0;
+
+        u.onstart = ()=>{ btn.textContent = '🔊 Speaking…'; };
+        u.onend   = ()=>{ btn.textContent = '✅ Voice OK'; setTimeout(()=>btn.remove(), 900); };
+        u.onerror = (e)=>{ btn.textContent = '❌ TTS error'; console.warn('TTS error', e); };
+
+        try { if (speechSynthesis.speaking) speechSynthesis.cancel(); } catch {}
+        setTimeout(()=> speechSynthesis.speak(u), 30);
+      } catch (e) {
+        console.warn('Test speak failed:', e);
+        btn.textContent = '❌ Speak failed';
+      }
+    });
+  }
 })();
+
 
 
 

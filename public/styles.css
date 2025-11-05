@@ -898,8 +898,6 @@ canvas {
   background:#111827; color:#fff; border:1px solid #374151;
 }
 
-body.nav-open { overflow: hidden; }
-
 @media (min-width: 769px){
     .lang-wrap { display:flex; align-items:center; gap:.5rem; margin-left:1rem; }
     .lang-wrap label { color:#fff; font-size:.9rem; }
@@ -912,6 +910,13 @@ body.nav-open { overflow: hidden; }
     header nav { display:flex; align-items:center; }
     header nav ul#navMenu { display:flex; gap:1rem; align-items:center; }
     @media (max-width: 640px) { .lang-wrap label { display:none; } }
+    .menu-toggle{ display:none !important; }
+    nav ul{
+    display:flex !important; position:static; transform:none;
+    height:auto; width:auto; padding:0; gap:20px;
+    background:transparent; box-shadow:none; border-radius:0;
+  }
+  .nav-backdrop{ display:none !important; }
 }
 /* ===== Mobile hamburger menu behavior ===== */
 /* ===== MOBILE: Right side drawer + centered language ===== */
@@ -960,28 +965,15 @@ body.nav-open { overflow: hidden; }
   }
 
   /* CENTER the Language row */
-  .lang-wrap, .lang-area, .language, .lang{
-    display:flex; align-items:center; justify-content:center;
-    gap:8px; margin-top:6px;
-  }
-  /* If you kept a label, keep it; remove next line if ayaw mo ng label */
-  /* .lang-wrap label{ display:none; } */
-
-  /* ensure the pill/button itself centers */
-  .lang-wrap .lang-pill,
-  .lang-wrap button{ margin-inline:auto; }
+    .lang-wrap { display:flex; align-items:center; gap:.5rem; margin-left:1rem; }
+    .lang-wrap label { color:#fff; font-size:.9rem; }
+    #langSelect {
+      appearance:none; background:#1f2937; color:#fff;
+      border:1px solid #374151; border-radius:8px;
+      padding:.35rem .75rem; font-size:.9rem; cursor:pointer;
+    }
 }
 
-/* Desktop stays inline, unchanged */
-@media (min-width: 769px){
-  .menu-toggle{ display:none !important; }
-  nav ul{
-    display:flex !important; position:static; transform:none;
-    height:auto; width:auto; padding:0; gap:20px;
-    background:transparent; box-shadow:none; border-radius:0;
-  }
-  .nav-backdrop{ display:none !important; }
-}
 
 
 

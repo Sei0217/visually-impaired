@@ -13,5 +13,11 @@
     { "source": "/home", "destination": "/index.html" },
     { "source": "/location", "destination": "/loc.html" }
   ],
-  "redirects": [{ "source": "/(.*)", "destination": "/maintenance.html", "permanent": false }]
+  "redirects": [
+    { "source": "/", "destination": "/maintenance.html", "permanent": false },
+    { "source": "/home", "destination": "/maintenance.html", "permanent": false },
+    { "source": "/information", "destination": "/maintenance.html", "permanent": false },
+    { "source": "/analytics", "destination": "/maintenance.html", "permanent": false },
+    { "source": "/index.html", "destination": "/maintenance.html", "permanent": false }
+  ]
 }

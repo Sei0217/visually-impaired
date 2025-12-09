@@ -14,6 +14,6 @@
     { "source": "/location", "destination": "/loc.html" }
   ],
   "redirects": [
-     { "source": "/", "destination": "/home", "permanent": false }
+    { "source": "/", "destination": "/home", "permanent": false }
   ]
 }
